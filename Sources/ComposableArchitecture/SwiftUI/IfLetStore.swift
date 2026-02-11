@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 import SwiftUI
 
 /// A view that safely unwraps a store of optional state in order to show one of two views.

@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 import Dispatch
 @_spi(SharedChangeTracking) import Sharing
 

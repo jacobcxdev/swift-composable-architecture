@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 import SwiftUI
 
 /// A view that controls a navigation presentation.

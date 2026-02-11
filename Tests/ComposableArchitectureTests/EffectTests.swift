@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 @_spi(Canary) @_spi(Internals) import ComposableArchitecture
 import XCTest
 

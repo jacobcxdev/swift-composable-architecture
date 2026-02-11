@@ -1,4 +1,4 @@
-@preconcurrency import Combine
+@preconcurrency import OpenCombineShim
 import ComposableArchitecture
 import XCTest
 

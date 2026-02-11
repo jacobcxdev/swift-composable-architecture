@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 @_spi(Internals) import ComposableArchitecture
 import SwiftUI
 import XCTest

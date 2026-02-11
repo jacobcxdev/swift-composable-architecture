@@ -1,5 +1,5 @@
 #if DEBUG
-  import Combine
+  import OpenCombineShim
   import CustomDump
   import XCTest
 

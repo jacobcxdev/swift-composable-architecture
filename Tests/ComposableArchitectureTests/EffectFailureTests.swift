@@ -1,5 +1,5 @@
 #if DEBUG
-  import Combine
+  import OpenCombineShim
   @_spi(Internals) import ComposableArchitecture
   import XCTest
 

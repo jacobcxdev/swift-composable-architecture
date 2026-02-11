@@ -19,16 +19,17 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.2"),
+    .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
+    .package(url: "https://github.com/flote-works/combine-schedulers", branch: "flote/service-app"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.5.4"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.2"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.4.0"),
+    .package(url: "https://github.com/flote-works/swift-dependencies", branch: "flote/service-app"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-navigation", from: "2.3.2"),
     .package(url: "https://github.com/pointfreeco/swift-perception", "1.3.4"..<"3.0.0"),
-    .package(url: "https://github.com/pointfreeco/swift-sharing", "1.0.4"..<"3.0.0"),
+    .package(url: "https://github.com/flote-works/swift-sharing", branch: "flote/service-app"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.3.0"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.0.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"603.0.0"),
@@ -46,6 +47,7 @@ let package = Package(
         .product(name: "DependenciesMacros", package: "swift-dependencies"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
+        .product(name: "OpenCombineShim", package: "OpenCombine"),
         .product(name: "OrderedCollections", package: "swift-collections"),
         .product(name: "Perception", package: "swift-perception"),
         .product(name: "Sharing", package: "swift-sharing"),
@@ -61,6 +63,7 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture",
         .product(name: "IssueReportingTestSupport", package: "xctest-dynamic-overlay"),
+        .product(name: "OpenCombineShim", package: "OpenCombine"),
       ]
     ),
     .macro(

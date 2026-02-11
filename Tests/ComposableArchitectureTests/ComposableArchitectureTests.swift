@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 import CombineSchedulers
 import ComposableArchitecture
 import XCTest

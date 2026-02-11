@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 @_spi(Logging) import ComposableArchitecture
 import XCTest
 

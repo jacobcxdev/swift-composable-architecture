@@ -1,4 +1,4 @@
-@preconcurrency import Combine
+@preconcurrency import OpenCombineShim
 @_spi(Internals) import ComposableArchitecture
 import XCTest
 

@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 import Foundation
 
 final class CurrentValueRelay<Output>: Publisher, @unchecked Sendable {

@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 
 extension Effect {
   /// Turns an effect into one that can be debounced.

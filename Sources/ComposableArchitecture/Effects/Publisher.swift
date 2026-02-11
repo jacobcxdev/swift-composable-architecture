@@ -1,4 +1,4 @@
-import Combine
+import OpenCombineShim
 
 extension Effect {
   /// Creates an effect from a Combine publisher.

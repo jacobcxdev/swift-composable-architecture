@@ -1,5 +1,5 @@
 @_spi(Reflection) import CasePaths
-import Combine
+import OpenCombineShim
 
 /// A property wrapper for state that can be presented.
 ///

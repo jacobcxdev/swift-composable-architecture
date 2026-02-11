@@ -1,5 +1,5 @@
 #if DEBUG
-  @preconcurrency import Combine
+  @preconcurrency import OpenCombineShim
   @testable @preconcurrency import ComposableArchitecture
   import XCTest
 
