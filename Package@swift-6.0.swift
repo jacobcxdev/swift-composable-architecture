@@ -3,6 +3,8 @@
 import CompilerPluginSupport
 import PackageDescription
 
+let android = Context.environment["TARGET_OS_ANDROID"] ?? "0" != "0"
+
 let package = Package(
   name: "swift-composable-architecture",
   platforms: [
@@ -33,7 +35,11 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.3.0"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.0.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"603.0.0"),
-  ],
+  ]
+    + (android ? [
+      .package(url: "https://source.skip.tools/skip-bridge.git", "0.16.4"..<"2.0.0"),
+      .package(url: "https://source.skip.tools/swift-jni.git", "0.3.1"..<"2.0.0"),
+    ] : []),
   targets: [
     .target(
       name: "ComposableArchitecture",
@@ -52,8 +58,13 @@ let package = Package(
         .product(name: "Perception", package: "swift-perception"),
         .product(name: "Sharing", package: "swift-sharing"),
         .product(name: "SwiftUINavigation", package: "swift-navigation"),
-        .product(name: "UIKitNavigation", package: "swift-navigation"),
-      ],
+      ]
+        + (android
+          ? [
+            .product(name: "SkipBridge", package: "skip-bridge"),
+            .product(name: "SwiftJNI", package: "swift-jni"),
+          ]
+          : [.product(name: "UIKitNavigation", package: "swift-navigation")]),
       resources: [
         .process("Resources/PrivacyInfo.xcprivacy")
       ]
