@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import OpenCombineShim
 import SwiftUI
 
@@ -318,3 +319,4 @@ private final class _IfLetCore<Base: Core<Wrapped?, Action>, Wrapped, Action>: C
   var isInvalid: Bool { state == nil || base.isInvalid }
   var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
 }
+#endif

@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 @available(tvOS, unavailable)
@@ -114,3 +115,4 @@ extension View {
     }
   }
 }
+#endif

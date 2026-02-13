@@ -474,11 +474,13 @@ public final class TestStore<State: Equatable, Action> {
   public var exhaustivity: Exhaustivity = .on
 
   /// Serializes all async work to the main thread for the lifetime of the test store.
+  #if !os(Android)
   public var useMainSerialExecutor: Bool {
     get { uncheckedUseMainSerialExecutor }
     set { uncheckedUseMainSerialExecutor = newValue }
   }
   private let originalUseMainSerialExecutor = uncheckedUseMainSerialExecutor
+  #endif
 
   /// The current state of the test store.
   ///
@@ -551,9 +553,11 @@ public final class TestStore<State: Equatable, Action> {
     self.column = column
     self.reducer = reducer
     self.store = Store(initialState: reducer.state) { reducer }
-    self.timeout = 1 * NSEC_PER_SEC
+    self.timeout = 1 * 1_000_000_000
     self.sharedChangeTracker = sharedChangeTracker
+    #if !os(Android)
     self.useMainSerialExecutor = true
+    #endif
     self.reducer.store = self
   }
 
@@ -630,7 +634,7 @@ public final class TestStore<State: Equatable, Action> {
         reportIssueHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
-          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(1_000_000_000)) seconds" : "").
 
           \(suggestion)
           """,
@@ -647,7 +651,9 @@ public final class TestStore<State: Equatable, Action> {
   }
 
   deinit {
+    #if !os(Android)
     uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
+    #endif
     mainActorNow { self.completed() }
   }
 
@@ -997,6 +1003,7 @@ extension TestStore {
           column: column
         )
       )
+      #if !os(Android)
       if uncheckedUseMainSerialExecutor {
         await Task.yield()
       } else {
@@ -1004,6 +1011,11 @@ extension TestStore {
           break
         }
       }
+      #else
+      for await _ in self.reducer.effectDidSubscribe.stream {
+        break
+      }
+      #endif
       do {
         let currentState = self.state
         let currentStackElementID = self.reducer.dependencies.stackElementID
@@ -2237,7 +2249,7 @@ extension TestStore {
           """
           Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but \
           received none\
-          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(1_000_000_000)) seconds" : "").
 
           \(suggestion)
           """,
@@ -2565,6 +2577,7 @@ extension TestStore {
   }
 }
 
+#if canImport(SwiftUI)
 extension TestStore {
   /// Returns a binding view store for this store.
   ///
@@ -2667,6 +2680,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
     self.bindings(action: AnyCasePath())
   }
 }
+#endif
 
 /// The type returned from ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` that represents the
 /// lifecycle of the effect started from sending an action.
@@ -2798,7 +2812,7 @@ public struct TestStoreTask: Hashable, Sendable {
       reportIssue(
         """
         Expected task to finish, but it is still in-flight\
-        \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+        \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(1_000_000_000)) seconds" : "").
 
         \(suggestion)
         """,
@@ -2938,7 +2952,7 @@ class TestReducer<State: Equatable, Action>: Reducer {
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension Duration {
   fileprivate var nanoseconds: UInt64 {
-    UInt64(self.components.seconds) * NSEC_PER_SEC
+    UInt64(self.components.seconds) * 1_000_000_000
       + UInt64(self.components.attoseconds) / 1_000_000_000
   }
 }

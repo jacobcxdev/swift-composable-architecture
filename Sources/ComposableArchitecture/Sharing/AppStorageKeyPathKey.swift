@@ -1,3 +1,4 @@
+#if canImport(Darwin)
 import Dependencies
 import Foundation
 
@@ -96,3 +97,4 @@ extension AppStorageKeyPathKey: SharedKey, Hashable {
 private enum SharedAppStorageLocals {
   @TaskLocal static var isSetting = false
 }
+#endif

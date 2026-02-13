@@ -1,6 +1,8 @@
 @preconcurrency import OpenCombineShim
 import Foundation
+#if canImport(SwiftUI)
 import SwiftUI
+#endif
 
 public struct Effect<Action>: Sendable {
   @usableFromInline
@@ -156,12 +158,14 @@ extension Effect {
   /// >
   /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
   ///
+  #if canImport(SwiftUI)
   /// - Parameters:
   ///   - action: The action that is immediately emitted by the effect.
   ///   - animation: An animation.
   public static func send(_ action: Action, animation: Animation? = nil) -> Self {
     .send(action).animation(animation)
   }
+  #endif
 }
 
 /// A type that can send actions back into the system when used from
@@ -208,6 +212,7 @@ public struct Send<Action>: Sendable {
     self.send(action)
   }
 
+  #if canImport(SwiftUI)
   /// Sends an action back into the system from an effect with animation.
   ///
   /// - Parameters:
@@ -228,6 +233,7 @@ public struct Send<Action>: Sendable {
       self(action)
     }
   }
+  #endif
 }
 
 // MARK: - Composing Effects
@@ -438,4 +444,53 @@ extension Effect {
       addTask(priority: priority, operation: operation)
     }
   }
+#endif
+
+// MARK: - OpenCombine Merge polyfill
+#if !canImport(Combine)
+extension Publishers {
+  @usableFromInline
+  struct Merge<A: Publisher, B: Publisher>: Publisher
+  where A.Output == B.Output, A.Failure == B.Failure {
+    @usableFromInline
+    typealias Output = A.Output
+    @usableFromInline
+    typealias Failure = A.Failure
+    let a: A
+    let b: B
+    @usableFromInline
+    init(_ a: A, _ b: B) { self.a = a; self.b = b }
+    @usableFromInline
+    func receive<S: Subscriber>(subscriber: S)
+    where S.Input == Output, S.Failure == Failure {
+      let subject = PassthroughSubject<Output, Failure>()
+      var cancellables: [AnyCancellable] = []
+      var completions = 0
+      let lock = NSLock()
+      a.sink(
+        receiveCompletion: { _ in
+          lock.lock()
+          completions += 1
+          let done = completions == 2
+          lock.unlock()
+          if done { subject.send(completion: .finished) }
+        },
+        receiveValue: { subject.send($0) }
+      ).store(in: &cancellables)
+      b.sink(
+        receiveCompletion: { _ in
+          lock.lock()
+          completions += 1
+          let done = completions == 2
+          lock.unlock()
+          if done { subject.send(completion: .finished) }
+        },
+        receiveValue: { subject.send($0) }
+      ).store(in: &cancellables)
+      subject
+        .handleEvents(receiveCancel: { cancellables.forEach { $0.cancel() } })
+        .subscribe(subscriber)
+    }
+  }
+}
 #endif

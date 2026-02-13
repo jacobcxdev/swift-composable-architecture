@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 @_spi(Reflection) import CasePaths
 import SwiftUI
 
@@ -128,3 +129,4 @@ private struct NavigationDestinationID: Hashable {
     self.enumTag = EnumMetadata(Value.self)?.tag(of: value)
   }
 }
+#endif

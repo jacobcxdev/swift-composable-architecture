@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 @preconcurrency import OpenCombineShim
 import SwiftUI
 
@@ -627,3 +628,4 @@ private struct HashableWrapper<Value>: Hashable {
 enum BindingLocal {
   @TaskLocal static var isActive = false
 }
+#endif

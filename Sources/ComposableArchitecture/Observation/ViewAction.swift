@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 /// Defines the actions that can be sent from a view.
@@ -39,3 +40,4 @@ extension ViewActionSending {
     self.store.send(.view(action), transaction: transaction)
   }
 }
+#endif

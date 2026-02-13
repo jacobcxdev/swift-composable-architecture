@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 #if canImport(Observation)
@@ -515,3 +516,4 @@ func uncachedStoreWarning<State, Action>(_ store: Store<State, Action>) -> Strin
   https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7
   """
 }
+#endif

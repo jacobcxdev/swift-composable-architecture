@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 @_spi(Reflection) import CasePaths
 import SwiftUI
 
@@ -258,3 +259,4 @@ private final class StoreObservableObject<State, Action>: ObservableObject {
 private func enumTag<Case>(_ `case`: Case) -> UInt32? {
   EnumMetadata(Case.self)?.tag(of: `case`)
 }
+#endif

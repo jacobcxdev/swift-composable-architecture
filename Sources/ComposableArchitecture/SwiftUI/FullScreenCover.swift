@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 #if !os(macOS)
@@ -104,4 +105,5 @@ import SwiftUI
       }
     }
   }
+#endif
 #endif

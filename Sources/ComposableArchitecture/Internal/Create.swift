@@ -133,7 +133,7 @@ extension Publishers {
 }
 
 extension Publishers.Create {
-  fileprivate final class Subscription<Downstream: Subscriber>: Combine.Subscription, Sendable
+  fileprivate final class Subscription<Downstream: Subscriber>: OpenCombineShim.Subscription, Sendable
   where Downstream.Input == Output, Downstream.Failure == Never {
     private let buffer: DemandBuffer<Downstream>
     private let cancellable = LockIsolated<(any Cancellable)?>(nil)

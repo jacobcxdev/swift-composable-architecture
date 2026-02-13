@@ -1,5 +1,6 @@
 import Foundation
 
+#if canImport(Darwin)
 extension UnsafeMutablePointer<os_unfair_lock_s> {
   @inlinable @discardableResult
   func sync<R>(_ work: () -> R) -> R {
@@ -16,6 +17,7 @@ extension UnsafeMutablePointer<os_unfair_lock_s> {
     os_unfair_lock_unlock(self)
   }
 }
+#endif
 
 extension NSRecursiveLock {
   @inlinable @discardableResult

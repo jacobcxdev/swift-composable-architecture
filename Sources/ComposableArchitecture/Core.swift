@@ -1,6 +1,20 @@
 import OpenCombineShim
 import Foundation
 
+#if !canImport(SwiftUI)
+public var _isInPerceptionTracking: Bool {
+  #if DEBUG && !os(visionOS)
+    return _PerceptionLocals.isInPerceptionTracking || _PerceptionLocals.skipPerceptionChecking
+  #else
+    return false
+  #endif
+}
+
+enum BindingLocal {
+  @TaskLocal static var isActive = false
+}
+#endif
+
 @MainActor
 protocol Core<State, Action>: AnyObject, Sendable {
   associatedtype State

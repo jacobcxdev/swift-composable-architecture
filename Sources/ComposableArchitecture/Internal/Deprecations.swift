@@ -135,11 +135,13 @@
 
 // NB: Deprecated with 1.10.0:
 
+#if canImport(SwiftUI)
 @available(*, deprecated, message: "Use '.fileSystem' ('FileStorage.fileSystem') instead")
 public func LiveFileStorage() -> FileStorage { .fileSystem }
 
 @available(*, deprecated, message: "Use '.inMemory' ('FileStorage.inMemory') instead")
 public func InMemoryFileStorage() -> FileStorage { .inMemory }
+#endif
 
 // NB: Deprecated with 1.0.0:
 

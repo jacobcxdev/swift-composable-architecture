@@ -1,4 +1,6 @@
+#if canImport(SwiftUI)
 import SwiftUI
+#endif
 
 extension DependencyValues {
   /// An effect that dismisses the current presentation.
@@ -85,6 +87,7 @@ public struct DismissEffect: Sendable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
+    #if canImport(SwiftUI)
     await self.callAsFunction(
       animation: nil,
       fileID: fileID,
@@ -92,8 +95,31 @@ public struct DismissEffect: Sendable {
       line: line,
       column: column
     )
+    #else
+    guard let dismiss = self.dismiss
+    else {
+      reportIssue(
+        """
+        A reducer requested dismissal at "\(fileID):\(line)", but couldn't be dismissed.
+
+        This is generally considered an application logic error, and can happen when a reducer \
+        assumes it runs in a presentation context. If a reducer can run at both the root level \
+        of an application, as well as in a presentation destination, use \
+        @Dependency(\\.isPresented) to determine if the reducer is being presented before calling \
+        @Dependency(\\.dismiss).
+        """,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+      return
+    }
+    dismiss()
+    #endif
   }
 
+  #if canImport(SwiftUI)
   @MainActor
   public func callAsFunction(
     animation: Animation?,
@@ -142,6 +168,7 @@ public struct DismissEffect: Sendable {
       dismiss()
     }
   }
+  #endif
 }
 
 extension DismissEffect {

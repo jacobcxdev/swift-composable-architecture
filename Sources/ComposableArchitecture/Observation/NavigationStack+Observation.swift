@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 extension Binding {
@@ -580,3 +581,4 @@ extension EnvironmentValues {
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }
 }
+#endif

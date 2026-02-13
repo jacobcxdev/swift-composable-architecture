@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import OpenCombineShim
 import SwiftUI
 
@@ -377,3 +378,4 @@ public struct DestinationContent<State, Action> {
     IfLetStore(self.store, then: body)
   }
 }
+#endif

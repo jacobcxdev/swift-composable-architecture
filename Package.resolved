@@ -1,5 +1,5 @@
 {
-  "originHash" : "42cb60a30003531ba2b05d924894e2f266023d712855ad6042c2ab5fd93fd441",
+  "originHash" : "cc9df216240a5d4e1bb500159b6b4addc6767f14fe0825052095fa7213561e58",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/flote-works/combine-schedulers",
       "state" : {
         "branch" : "flote/service-app",
-        "revision" : "3856c9c2b4815fd6423bf7c34cabc46ee9d9189e"
+        "revision" : "9e5d118af1f518f8a6ce832047765cec622729c6"
       }
     },
     {
@@ -70,7 +70,7 @@
       "location" : "https://github.com/flote-works/swift-dependencies",
       "state" : {
         "branch" : "flote/service-app",
-        "revision" : "84d778895e8acbabce6b0de250309825c8e1fa22"
+        "revision" : "45992be553ea7bae99670939b54fd23c7f657ae0"
       }
     },
     {
@@ -112,10 +112,10 @@
     {
       "identity" : "swift-navigation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-navigation",
+      "location" : "https://github.com/flote-works/swift-navigation",
       "state" : {
-        "revision" : "bf498690e1f6b4af790260f542e8428a4ba10d78",
-        "version" : "2.6.0"
+        "branch" : "flote/service-app",
+        "revision" : "bb15d92bb3bb8ced3c74a5beff2361c80830ed0d"
       }
     },
     {
@@ -133,7 +133,7 @@
       "location" : "https://github.com/flote-works/swift-sharing",
       "state" : {
         "branch" : "flote/service-app",
-        "revision" : "eb45b7da88751d0b08147ef2cc88da6671e3c902"
+        "revision" : "7a31a71be81f618c45b8f5f35d1446d02bbda877"
       }
     },
     {

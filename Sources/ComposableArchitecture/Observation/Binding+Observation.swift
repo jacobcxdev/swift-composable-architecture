@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 extension Binding {
@@ -432,3 +433,4 @@ extension Store where State: ObservableState {
     }
   }
 }
+#endif

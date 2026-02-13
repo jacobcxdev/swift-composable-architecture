@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import CustomDump
 import SwiftUI
 
@@ -795,4 +796,5 @@ extension WithViewStore where ViewState: Equatable, Content: View {
       self.viewStore.state
     }
   }
+#endif
 #endif

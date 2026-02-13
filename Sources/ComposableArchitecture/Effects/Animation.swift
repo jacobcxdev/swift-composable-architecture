@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import OpenCombineShim
 import SwiftUI
 
@@ -98,3 +99,4 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
     }
   }
 }
+#endif

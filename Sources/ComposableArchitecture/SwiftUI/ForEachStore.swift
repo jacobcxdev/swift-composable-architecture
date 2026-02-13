@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import OrderedCollections
 import SwiftUI
 
@@ -256,3 +257,4 @@ extension Case {
     )
   }
 }
+#endif

@@ -1,7 +1,9 @@
 import OpenCombineShim
 import CombineSchedulers
 import Foundation
+#if canImport(SwiftUI)
 import SwiftUI
+#endif
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -195,6 +197,7 @@ public final class Store<State, Action>: _Store {
     .init(rawValue: self.send(action))
   }
 
+  #if canImport(SwiftUI)
   /// Sends an action to the store with a given animation.
   ///
   /// See ``Store/send(_:)`` for more info.
@@ -220,6 +223,7 @@ public final class Store<State, Action>: _Store {
       .init(rawValue: self.send(action))
     }
   }
+  #endif
 
   /// Scopes the store to one that exposes child state and actions.
   ///
@@ -417,6 +421,30 @@ extension Store: ObservableObject {}
 /// let store: StoreOf<Feature>
 /// ```
 public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
+
+#if !canImport(SwiftUI)
+extension Store: Perceptible {}
+extension Store {
+  public var state: State {
+    self._$observationRegistrar.access(self, keyPath: \.currentState)
+    return self.currentState
+  }
+  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
+    self.state[keyPath: keyPath]
+  }
+}
+extension Store: Equatable {
+  public static nonisolated func == (lhs: Store, rhs: Store) -> Bool {
+    lhs === rhs
+  }
+}
+extension Store: Hashable {
+  public nonisolated func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
+  }
+}
+extension Store: Identifiable {}
+#endif
 
 /// A publisher of store state.
 @dynamicMemberLookup

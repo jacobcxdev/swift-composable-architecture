@@ -9,5 +9,7 @@
 @_exported import Observation
 @_exported import Perception
 @_exported import Sharing
+#if canImport(SwiftUI)
 @_exported import SwiftUINavigation
 @_exported import UIKitNavigation
+#endif

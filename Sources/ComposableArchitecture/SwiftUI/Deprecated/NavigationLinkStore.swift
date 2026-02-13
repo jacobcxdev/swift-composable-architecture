@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import OpenCombineShim
 import SwiftUI
 
@@ -215,3 +216,4 @@ private final class NavigationLinkCore<
   var isInvalid: Bool { state.wrappedValue.flatMap(toDestinationState)?.id != id || base.isInvalid }
   var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
 }
+#endif
