@@ -1,13 +1,13 @@
 #if canImport(SwiftUI)
   import SwiftUI
 #endif
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(Android)
   import UIKit
 #endif
 
 // NB: Deprecated with 1.13.0:
 
-#if canImport(UIKit) && !os(watchOS)
+#if canImport(UIKit) && !os(watchOS) && !os(Android)
   extension UIAlertController {
     @_disfavoredOverload
     @available(*, unavailable, renamed: "init(state:handler:)")
@@ -135,7 +135,7 @@
 
 // NB: Deprecated with 1.10.0:
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && !os(Android)
 @available(*, deprecated, message: "Use '.fileSystem' ('FileStorage.fileSystem') instead")
 public func LiveFileStorage() -> FileStorage { .fileSystem }
 

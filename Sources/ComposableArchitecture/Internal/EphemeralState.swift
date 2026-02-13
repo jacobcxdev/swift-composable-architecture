@@ -14,7 +14,7 @@ extension _EphemeralState {
   public static var actionType: Any.Type { Action.self }
 }
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && !os(Android)
 @_documentation(visibility: private)
 extension AlertState: _EphemeralState {}
 
