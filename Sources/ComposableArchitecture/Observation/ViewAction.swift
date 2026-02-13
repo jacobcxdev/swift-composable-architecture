@@ -28,6 +28,7 @@ extension ViewActionSending {
     self.store.send(.view(action))
   }
 
+  #if !os(Android)
   /// Send a view action to the store with animation.
   @discardableResult
   public func send(_ action: StoreAction.ViewAction, animation: Animation?) -> StoreTask {
@@ -39,5 +40,6 @@ extension ViewActionSending {
   public func send(_ action: StoreAction.ViewAction, transaction: Transaction) -> StoreTask {
     self.store.send(.view(action), transaction: transaction)
   }
+  #endif
 }
 #endif
