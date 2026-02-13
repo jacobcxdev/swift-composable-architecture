@@ -30,7 +30,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/flote-works/swift-navigation", branch: "flote/service-app"),
-    .package(url: "https://github.com/pointfreeco/swift-perception", "1.3.4"..<"3.0.0"),
+    .package(url: "https://github.com/flote-works/swift-perception", branch: "flote/service-app"),
     .package(url: "https://github.com/flote-works/swift-sharing", branch: "flote/service-app"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.3.0"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.0.0"),
