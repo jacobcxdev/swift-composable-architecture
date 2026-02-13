@@ -11,6 +11,7 @@ extension Binding {
   }
 }
 
+#if !os(Android)
 extension ObservedObject.Wrapper {
   @_disfavoredOverload
   public subscript<State: ObservableState, Action, Member>(
@@ -30,6 +31,7 @@ extension UIBinding {
     _StoreUIBinding(binding: self, keyPath: keyPath)
   }
 }
+#endif
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension SwiftUI.Bindable {
@@ -42,6 +44,7 @@ extension SwiftUI.Bindable {
   }
 }
 
+#if !os(Android)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -66,6 +69,7 @@ extension UIBindable {
     _StoreUIBindable(bindable: self, keyPath: keyPath)
   }
 }
+#endif
 
 extension BindingAction {
   public static func set<Value: Equatable & Sendable>(
@@ -283,6 +287,7 @@ public struct _StoreBinding<State: ObservableState, Action, Value> {
   }
 }
 
+#if !os(Android)
 @dynamicMemberLookup
 public struct _StoreObservedObject<State: ObservableState, Action, Value> {
   fileprivate let wrapper: ObservedObject<Store<State, Action>>.Wrapper
@@ -334,6 +339,7 @@ public struct _StoreUIBinding<State: ObservableState, Action, Value> {
     self.binding[state: self.keyPath, action: action]
   }
 }
+#endif
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 @dynamicMemberLookup
@@ -364,6 +370,7 @@ public struct _StoreBindable_SwiftUI<State: ObservableState, Action, Value> {
   }
 }
 
+#if !os(Android)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -419,6 +426,7 @@ public struct _StoreUIBindable<State: ObservableState, Action, Value> {
     self.bindable[state: self.keyPath, action: action]
   }
 }
+#endif
 
 extension Store where State: ObservableState {
   fileprivate subscript<Value>(

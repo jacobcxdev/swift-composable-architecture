@@ -194,6 +194,7 @@ extension Binding {
   }
 }
 
+#if !os(Android)
 extension ObservedObject.Wrapper {
   #if swift(>=5.10)
     @preconcurrency@MainActor
@@ -232,6 +233,7 @@ extension Store {
     set {}
   }
 }
+#endif
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension SwiftUI.Bindable {
@@ -312,6 +314,7 @@ extension SwiftUI.Bindable {
   }
 }
 
+#if !os(Android)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -423,6 +426,7 @@ extension UIBindable {
     ]
   }
 }
+#endif
 
 extension Store where State: ObservableState {
   @_spi(Internals)

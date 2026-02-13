@@ -71,6 +71,7 @@ extension Binding {
   }
 }
 
+#if !os(Android)
 extension ObservedObject.Wrapper {
   #if swift(>=5.10)
     @preconcurrency@MainActor
@@ -85,6 +86,7 @@ extension ObservedObject.Wrapper {
     self[state: state, action: action]
   }
 }
+#endif
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension SwiftUI.Bindable {
@@ -106,6 +108,7 @@ extension SwiftUI.Bindable {
   }
 }
 
+#if !os(Android)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -142,7 +145,9 @@ extension UIBindable {
     self[state: state, action: action]
   }
 }
+#endif
 
+#if !os(Android)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.
@@ -211,6 +216,7 @@ public struct _NavigationDestinationViewModifier<
       }
   }
 }
+#endif
 
 @_spi(Internals)
 extension Store {
@@ -255,6 +261,7 @@ extension Store {
   }
 }
 
+#if !os(Android)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
   /// Creates a navigation link that presents the view corresponding to an element of
@@ -411,6 +418,7 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
     #endif
   }
 }
+#endif
 
 extension Store where State: ObservableState {
   fileprivate subscript<ElementState, ElementAction>(
@@ -570,6 +578,7 @@ extension StackState {
   }
 }
 
+#if !os(Android)
 private struct NavigationDestinationTypeKey: EnvironmentKey {
   static var defaultValue: Any.Type? { nil }
 }
@@ -581,4 +590,5 @@ extension EnvironmentValues {
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }
 }
+#endif
 #endif
