@@ -1,4 +1,4 @@
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && !os(Android)
 @preconcurrency import OpenCombineShim
 import SwiftUI
 

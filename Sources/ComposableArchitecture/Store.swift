@@ -197,7 +197,7 @@ public final class Store<State, Action>: _Store {
     .init(rawValue: self.send(action))
   }
 
-  #if canImport(SwiftUI)
+  #if canImport(SwiftUI) && !os(Android)
   /// Sends an action to the store with a given animation.
   ///
   /// See ``Store/send(_:)`` for more info.
