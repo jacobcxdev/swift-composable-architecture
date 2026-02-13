@@ -1,7 +1,7 @@
 import OpenCombineShim
 import Foundation
 
-#if !canImport(SwiftUI)
+#if !canImport(SwiftUI) || os(Android)
 public var _isInPerceptionTracking: Bool {
   #if DEBUG && !os(visionOS)
     return _PerceptionLocals.isInPerceptionTracking || _PerceptionLocals.skipPerceptionChecking
