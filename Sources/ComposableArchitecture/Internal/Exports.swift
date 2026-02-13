@@ -11,5 +11,7 @@
 @_exported import Sharing
 #if canImport(SwiftUI)
 @_exported import SwiftUINavigation
+#if !os(Android)
 @_exported import UIKitNavigation
+#endif
 #endif
