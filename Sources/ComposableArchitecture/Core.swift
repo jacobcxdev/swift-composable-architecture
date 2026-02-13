@@ -1,7 +1,7 @@
 import OpenCombineShim
 import Foundation
 
-#if !canImport(SwiftUI) || os(Android)
+#if !canImport(SwiftUI)
 public var _isInPerceptionTracking: Bool {
   #if DEBUG && !os(visionOS)
     return _PerceptionLocals.isInPerceptionTracking || _PerceptionLocals.skipPerceptionChecking
@@ -9,7 +9,9 @@ public var _isInPerceptionTracking: Bool {
     return false
   #endif
 }
+#endif
 
+#if !canImport(SwiftUI) || os(Android)
 enum BindingLocal {
   @TaskLocal static var isActive = false
 }
