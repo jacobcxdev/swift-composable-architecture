@@ -40,6 +40,7 @@ let package = Package(
       .package(url: "https://source.skip.tools/skip-bridge.git", "0.16.4"..<"2.0.0"),
       .package(url: "https://source.skip.tools/skip-android-bridge.git", "0.6.1"..<"2.0.0"),
       .package(url: "https://source.skip.tools/swift-jni.git", "0.3.1"..<"2.0.0"),
+      .package(url: "https://source.skip.tools/skip-fuse-ui.git", from: "1.0.0"),
     ] : []),
   targets: [
     .target(
@@ -65,6 +66,7 @@ let package = Package(
             .product(name: "SkipBridge", package: "skip-bridge"),
             .product(name: "SkipAndroidBridge", package: "skip-android-bridge"),
             .product(name: "SwiftJNI", package: "swift-jni"),
+            .product(name: "SkipFuseUI", package: "skip-fuse-ui"),
           ]
           : [.product(name: "UIKitNavigation", package: "swift-navigation")]),
       resources: [
