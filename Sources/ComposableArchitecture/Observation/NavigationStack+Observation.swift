@@ -190,7 +190,6 @@ extension NavigationStack {
     }
   }
 }
-#endif
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct _NavigationDestinationViewModifier<
@@ -217,6 +216,7 @@ public struct _NavigationDestinationViewModifier<
       }
   }
 }
+#endif
 
 @_spi(Internals)
 extension Store {
