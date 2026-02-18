@@ -1,4 +1,4 @@
-#if canImport(SwiftUI) && !os(Android)
+#if canImport(SwiftUI)
 @_spi(Reflection) import CasePaths
 import SwiftUI
 

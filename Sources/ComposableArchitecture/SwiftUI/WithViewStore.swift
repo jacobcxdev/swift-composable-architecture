@@ -1,4 +1,4 @@
-#if canImport(SwiftUI) && !os(Android)
+#if canImport(SwiftUI)
 import CustomDump
 import SwiftUI
 

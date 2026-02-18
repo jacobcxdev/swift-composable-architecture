@@ -1,4 +1,4 @@
-#if canImport(SwiftUI) && !os(Android)
+#if canImport(SwiftUI)
 @preconcurrency import OpenCombineShim
 import SwiftUI
 
@@ -248,6 +248,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self.store.send(action)
   }
 
+  #if !os(Android)
   /// Sends an action to the store with a given animation.
   ///
   /// See ``ViewStore/send(_:)`` for more info.
@@ -273,6 +274,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.send(action)
     }
   }
+  #endif
 
   /// Sends an action into the store and then suspends while a piece of state is `true`.
   ///
@@ -360,6 +362,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     }
   }
 
+  #if !os(Android)
   /// Sends an action into the store and then suspends while a piece of state is `true`.
   ///
   /// See the documentation of ``send(_:while:)`` for more information.
@@ -381,6 +384,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       task.cancel()
     }
   }
+  #endif
 
   /// Suspends the current task while a predicate on state is `true`.
   ///
@@ -625,7 +629,9 @@ private struct HashableWrapper<Value>: Hashable {
   func hash(into hasher: inout Hasher) {}
 }
 
+#if !os(Android)  // BindingLocal already defined in Core.swift for Android
 enum BindingLocal {
   @TaskLocal static var isActive = false
 }
+#endif
 #endif
