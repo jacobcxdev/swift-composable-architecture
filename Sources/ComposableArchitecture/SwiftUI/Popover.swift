@@ -1,4 +1,4 @@
-#if canImport(SwiftUI) && !os(Android)
+#if canImport(SwiftUI)
 import SwiftUI
 
 @available(tvOS, unavailable)
