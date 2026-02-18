@@ -383,4 +383,199 @@
       Logger.shared.isEnabled = false
     }
   }
+
+  // MARK: - Category B: SwiftUI Integration (un-guarded code)
+
+  import SwiftUI
+
+  /// Tests verifying un-guarded TCA SwiftUI integrations compile and work correctly.
+  /// These exercise the same code paths used on Android via SkipSwiftUI.
+  @MainActor
+  final class TCASwiftUIParityTests: BaseTCATestCase {
+
+    // MARK: - ForEachStore
+
+    @Reducer
+    fileprivate struct ItemFeature {
+      @ObservableState
+      struct State: Equatable, Identifiable {
+        let id: UUID
+        var name: String
+      }
+      enum Action: Equatable {
+        case tapped
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in .none }
+      }
+    }
+
+    @Reducer
+    fileprivate struct ListFeature {
+      @ObservableState
+      struct State: Equatable {
+        var items: IdentifiedArrayOf<ItemFeature.State> = []
+      }
+      enum Action: Equatable {
+        case items(IdentifiedActionOf<ItemFeature>)
+      }
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+          .forEach(\.items, action: \.items) {
+            ItemFeature()
+          }
+      }
+    }
+
+    func testForEachStoreInstantiation() {
+      // Verify ForEachStore can be created with a store — compilation check
+      // for the un-guarded ForEachStore.swift.
+      let store = Store(initialState: ListFeature.State()) {
+        ListFeature()
+      }
+      let view = ForEachStore(store.scope(state: \.items, action: \.items)) { itemStore in
+        Text(itemStore.name)
+      }
+      let _ = view.body
+    }
+
+    // MARK: - IfLetStore
+
+    @Reducer
+    fileprivate struct OptionalFeature {
+      @ObservableState
+      struct State: Equatable {
+        var child: ItemFeature.State?
+      }
+      enum Action: Equatable {
+        case child(ItemFeature.Action)
+      }
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+          .ifLet(\.child, action: \.child) {
+            ItemFeature()
+          }
+      }
+    }
+
+    func testIfLetStoreInstantiation() {
+      // Verify IfLetStore can be created — compilation check for un-guarded IfLetStore.swift.
+      let store = Store(initialState: OptionalFeature.State()) {
+        OptionalFeature()
+      }
+      let view = IfLetStore(store.scope(state: \.child, action: \.child)) { childStore in
+        Text(childStore.name)
+      }
+      let _ = view.body
+    }
+
+    // MARK: - NavigationStackStore
+
+    @Reducer
+    fileprivate struct PathFeature {
+      @ObservableState
+      enum State: Equatable {
+        case detail(ItemFeature.State)
+      }
+      enum Action: Equatable {
+        case detail(ItemFeature.Action)
+      }
+      var body: some ReducerOf<Self> {
+        Scope(state: \.detail, action: \.detail) {
+          ItemFeature()
+        }
+      }
+    }
+
+    @Reducer
+    fileprivate struct NavFeature {
+      @ObservableState
+      struct State: Equatable {
+        var path = StackState<PathFeature.State>()
+      }
+      enum Action: Equatable {
+        case path(StackActionOf<PathFeature>)
+      }
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+          .forEach(\.path, action: \.path) {
+            PathFeature()
+          }
+      }
+    }
+
+    func testNavigationStackStoreInstantiation() {
+      // Verify NavigationStackStore can be created — compilation check for
+      // un-guarded NavigationStackStore.swift.
+      let store = Store(initialState: NavFeature.State()) {
+        NavFeature()
+      }
+      let view = NavigationStackStore(store.scope(state: \.path, action: \.path)) {
+        Text("Root")
+      } destination: { state in
+        switch state {
+        case .detail:
+          Text("Detail")
+        }
+      }
+      let _ = view.body
+    }
+
+    // MARK: - Sheet / Alert / ConfirmationDialog presentation modifiers
+
+    @Reducer
+    fileprivate struct PresentationFeature {
+      @ObservableState
+      struct State: Equatable {
+        @Presents var detail: ItemFeature.State?
+        @Presents var alert: AlertState<Action.Alert>?
+        @Presents var dialog: ConfirmationDialogState<Action.Dialog>?
+      }
+      enum Action: Equatable {
+        case detail(PresentationAction<ItemFeature.Action>)
+        case alert(PresentationAction<Alert>)
+        case dialog(PresentationAction<Dialog>)
+        enum Alert: Equatable { case confirm }
+        enum Dialog: Equatable { case option1, option2 }
+      }
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+          .ifLet(\.$detail, action: \.detail) { ItemFeature() }
+          .ifLet(\.$alert, action: \.alert)
+          .ifLet(\.$dialog, action: \.dialog)
+      }
+    }
+
+    func testSheetPresentationModifier() {
+      // Verify .sheet(store:) compiles — PresentationModifier + Sheet un-guarded.
+      let store = Store(initialState: PresentationFeature.State()) {
+        PresentationFeature()
+      }
+      let view = Text("Base")
+        .sheet(store: store.scope(state: \.$detail, action: \.detail)) { detailStore in
+          Text(detailStore.name)
+        }
+      XCTAssertNotNil(view)
+    }
+
+    func testAlertPresentationModifier() {
+      // Verify .alert(store:) compiles — Alert.swift un-guarded.
+      let store = Store(initialState: PresentationFeature.State()) {
+        PresentationFeature()
+      }
+      let view = Text("Base")
+        .alert(store: store.scope(state: \.$alert, action: \.alert))
+      XCTAssertNotNil(view)
+    }
+
+    func testConfirmationDialogPresentationModifier() {
+      // Verify .confirmationDialog(store:) compiles — ConfirmationDialog.swift un-guarded.
+      let store = Store(initialState: PresentationFeature.State()) {
+        PresentationFeature()
+      }
+      let view = Text("Base")
+        .confirmationDialog(store: store.scope(state: \.$dialog, action: \.dialog))
+      XCTAssertNotNil(view)
+    }
+  }
 #endif
