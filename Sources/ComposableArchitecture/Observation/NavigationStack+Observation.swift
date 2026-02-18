@@ -578,7 +578,6 @@ extension StackState {
   }
 }
 
-#if !os(Android)
 private struct NavigationDestinationTypeKey: EnvironmentKey {
   static var defaultValue: Any.Type? { nil }
 }
@@ -590,5 +589,4 @@ extension EnvironmentValues {
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }
 }
-#endif
 #endif

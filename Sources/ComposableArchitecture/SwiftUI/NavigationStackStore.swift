@@ -101,6 +101,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     )
   }
 
+  #if !os(Android)
   /// Creates a navigation stack with a store of stack state and actions.
   ///
   /// - Parameters:
@@ -172,6 +173,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       )
     )
   }
+  #endif
 
   public var body: some View {
     NavigationStack(
