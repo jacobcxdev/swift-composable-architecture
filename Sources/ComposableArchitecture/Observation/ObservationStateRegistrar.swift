@@ -1,7 +1,3 @@
-#if os(Android)
-import SkipAndroidBridge
-#endif
-
 /// Provides storage for tracking and access to data changes.
 public struct ObservationStateRegistrar: Sendable {
   public private(set) var id = ObservableStateID()
@@ -10,7 +6,7 @@ public struct ObservationStateRegistrar: Sendable {
     let registrar = PerceptionRegistrar()
   #else
     @usableFromInline
-    let registrar = Observation.ObservationRegistrar()
+    let registrar = ObservationRegistrar()
   #endif
   public init() {}
   public mutating func _$willModify() { self.id._$willModify() }
