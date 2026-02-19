@@ -4,6 +4,9 @@ import Foundation
 #if canImport(SwiftUI)
 import SwiftUI
 #endif
+#if os(Android)
+import SkipAndroidBridge
+#endif
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -118,7 +121,7 @@ public final class Store<State, Action>: _Store {
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
   #else
-    let _$observationRegistrar = ObservationRegistrar()
+    let _$observationRegistrar = Observation.ObservationRegistrar()
   #endif
   private var parentCancellable: AnyCancellable?
 
