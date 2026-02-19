@@ -1,7 +1,7 @@
 /// Provides storage for tracking and access to data changes.
 public struct ObservationStateRegistrar: Sendable {
   public private(set) var id = ObservableStateID()
-  #if !os(visionOS)
+  #if !os(visionOS) && !os(Android)
     @usableFromInline
     let registrar = PerceptionRegistrar()
   #else
@@ -121,7 +121,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
   }
 #endif
 
-#if !os(visionOS)
+#if !os(visionOS) && !os(Android)
   extension ObservationStateRegistrar {
     @_disfavoredOverload
     @inlinable

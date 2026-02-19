@@ -113,7 +113,7 @@ public final class Store<State, Action>: _Store {
   let core: any Core<State, Action>
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
 
-  #if !os(visionOS)
+  #if !os(visionOS) && !os(Android)
     let _$observationRegistrar = PerceptionRegistrar(
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )

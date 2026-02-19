@@ -5,7 +5,7 @@ import SwiftUI
   import Observation
 #endif
 
-#if !os(visionOS)
+#if !os(visionOS) && !os(Android)
   extension Store: Perceptible {}
 #endif
 
