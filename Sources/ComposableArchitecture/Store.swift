@@ -120,6 +120,8 @@ public final class Store<State, Action>: _Store {
     let _$observationRegistrar = PerceptionRegistrar(
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
+  #elseif os(Android)
+    let _$observationRegistrar = SkipAndroidBridge.Observation.ObservationRegistrar()
   #else
     let _$observationRegistrar = Observation.ObservationRegistrar()
   #endif

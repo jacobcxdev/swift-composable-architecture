@@ -8,6 +8,9 @@ public struct ObservationStateRegistrar: Sendable {
   #if !os(visionOS) && !os(Android)
     @usableFromInline
     let registrar = PerceptionRegistrar()
+  #elseif os(Android)
+    @usableFromInline
+    let registrar = SkipAndroidBridge.Observation.ObservationRegistrar()
   #else
     @usableFromInline
     let registrar = Observation.ObservationRegistrar()
