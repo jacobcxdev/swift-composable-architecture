@@ -126,6 +126,7 @@ extension Perception.Bindable {
     self[state: state, action: action]
   }
 }
+#endif
 
 extension UIBindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
@@ -145,9 +146,7 @@ extension UIBindable {
     self[state: state, action: action]
   }
 }
-#endif
 
-#if !os(Android)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.
@@ -216,7 +215,6 @@ public struct _NavigationDestinationViewModifier<
       }
   }
 }
-#endif
 
 @_spi(Internals)
 extension Store {
@@ -261,7 +259,6 @@ extension Store {
   }
 }
 
-#if !os(Android)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
   /// Creates a navigation link that presents the view corresponding to an element of
@@ -418,7 +415,6 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
     #endif
   }
 }
-#endif
 
 extension Store where State: ObservableState {
   fileprivate subscript<ElementState, ElementAction>(

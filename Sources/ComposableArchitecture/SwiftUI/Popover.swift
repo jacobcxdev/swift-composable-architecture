@@ -1,6 +1,7 @@
-#if canImport(SwiftUI) && !os(Android)
+#if canImport(SwiftUI)
 import SwiftUI
 
+#if !os(Android)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension View {
@@ -115,4 +116,19 @@ extension View {
     }
   }
 }
+#else
+// Android: popover falls back to sheet (Material3 bottom sheet)
+// Per D2: Android has no native popover concept
+@available(iOS 14, macOS 13, tvOS 17, watchOS 10, *)
+extension View {
+  public func popover<State, Action, Content: View>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
+    arrowEdge: Edge = .top,
+    @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
+  ) -> some View {
+    self.sheet(store: store, content: content)
+  }
+}
+#endif
 #endif

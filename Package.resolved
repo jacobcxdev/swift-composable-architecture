@@ -1,10 +1,10 @@
 {
-  "originHash" : "5df6d1488e4e8634e77c3e0d099bd0ac0fb3e02dc47a21c8420e687da181866b",
+  "originHash" : "2508f96f4952af444e67a3f9cb66426411890dcba6a1eef380e96ac54cf3592f",
   "pins" : [
     {
       "identity" : "combine-schedulers",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/flote-works/combine-schedulers",
+      "location" : "https://github.com/jacobcxdev/combine-schedulers",
       "state" : {
         "branch" : "flote/service-app",
         "revision" : "9e5d118af1f518f8a6ce832047765cec622729c6"
@@ -58,7 +58,7 @@
     {
       "identity" : "swift-custom-dump",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/flote-works/swift-custom-dump",
+      "location" : "https://github.com/jacobcxdev/swift-custom-dump",
       "state" : {
         "revision" : "2a2a938798236b8fa0bc57c453ee9de9f9ec3ab0",
         "version" : "1.4.1"
@@ -67,7 +67,7 @@
     {
       "identity" : "swift-dependencies",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/flote-works/swift-dependencies",
+      "location" : "https://github.com/jacobcxdev/swift-dependencies",
       "state" : {
         "branch" : "flote/service-app",
         "revision" : "45992be553ea7bae99670939b54fd23c7f657ae0"
@@ -112,7 +112,7 @@
     {
       "identity" : "swift-navigation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/flote-works/swift-navigation",
+      "location" : "https://github.com/jacobcxdev/swift-navigation",
       "state" : {
         "branch" : "flote/service-app",
         "revision" : "bb15d92bb3bb8ced3c74a5beff2361c80830ed0d"
@@ -121,7 +121,7 @@
     {
       "identity" : "swift-perception",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/flote-works/swift-perception",
+      "location" : "https://github.com/jacobcxdev/swift-perception",
       "state" : {
         "branch" : "flote/service-app",
         "revision" : "9d6298525bec6dbce4ae44e6e26b842a819932c9"
@@ -130,7 +130,7 @@
     {
       "identity" : "swift-sharing",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/flote-works/swift-sharing",
+      "location" : "https://github.com/jacobcxdev/swift-sharing",
       "state" : {
         "branch" : "flote/service-app",
         "revision" : "7a31a71be81f618c45b8f5f35d1446d02bbda877"
