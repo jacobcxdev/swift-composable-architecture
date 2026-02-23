@@ -147,6 +147,7 @@ extension UIBindable {
   }
 }
 
+#if !os(Android)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.
@@ -189,6 +190,7 @@ extension NavigationStack {
     }
   }
 }
+#endif
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct _NavigationDestinationViewModifier<
@@ -215,6 +217,74 @@ public struct _NavigationDestinationViewModifier<
       }
   }
 }
+
+#if os(Android)
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+public struct _TCANavigationStack<
+  State: ObservableState, Action, Root: View, Destination: View
+>: View {
+  let pathBinding: Binding<Store<StackState<State>, StackAction<State, Action>>>
+  let root: Root
+  let destination: (Store<State, Action>) -> Destination
+  let fileID: StaticString
+  let filePath: StaticString
+  let line: UInt
+  let column: UInt
+
+  public var body: some View {
+    let store = pathBinding.wrappedValue
+    let androidPath = Binding<[Any]>(
+      get: {
+        store.currentState.path.map { $0 as Any }
+      },
+      set: { newPath in
+        let currentCount = store.currentState.count
+        if newPath.count > currentCount,
+          let component = newPath.last as? StackState<State>.Component
+        {
+          store.send(.push(id: component.id, state: component.element))
+        } else if newPath.count < currentCount {
+          store.send(.popFrom(id: store.currentState.ids[newPath.count]))
+        }
+      }
+    )
+    NavigationStack(path: androidPath) {
+      root
+        .modifier(
+          _NavigationDestinationViewModifier(
+            store: store,
+            destination: destination,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+        )
+    }
+  }
+}
+
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+public func NavigationStack<State: ObservableState, Action, Destination: View, R: View>(
+  path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
+  @ViewBuilder root: () -> R,
+  @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column
+) -> some View {
+  _TCANavigationStack(
+    pathBinding: path,
+    root: root(),
+    destination: destination,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column
+  )
+}
+#endif
 
 @_spi(Internals)
 extension Store {
