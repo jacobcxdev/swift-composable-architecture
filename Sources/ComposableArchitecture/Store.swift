@@ -121,7 +121,7 @@ public final class Store<State, Action>: _Store {
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
   #elseif os(Android)
-    let _$observationRegistrar = SkipAndroidBridge.Observation.ObservationRegistrar()
+    let _$observationRegistrar = SkipAndroidBridge.BridgeObservation.BridgeObservationRegistrar()
   #else
     let _$observationRegistrar = Observation.ObservationRegistrar()
   #endif
