@@ -10,7 +10,7 @@ public struct ObservationStateRegistrar: Sendable {
     let registrar = PerceptionRegistrar()
   #elseif os(Android)
     @usableFromInline
-    let registrar = SkipAndroidBridge.Observation.ObservationRegistrar()
+    let registrar = SkipAndroidBridge.BridgeObservation.BridgeObservationRegistrar()
   #else
     @usableFromInline
     let registrar = Observation.ObservationRegistrar()
