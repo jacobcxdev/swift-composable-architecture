@@ -474,13 +474,11 @@ public final class TestStore<State: Equatable, Action> {
   public var exhaustivity: Exhaustivity = .on
 
   /// Serializes all async work to the main thread for the lifetime of the test store.
-  #if !os(Android)
   public var useMainSerialExecutor: Bool {
     get { uncheckedUseMainSerialExecutor }
     set { uncheckedUseMainSerialExecutor = newValue }
   }
   private let originalUseMainSerialExecutor = uncheckedUseMainSerialExecutor
-  #endif
 
   /// The current state of the test store.
   ///
@@ -555,9 +553,7 @@ public final class TestStore<State: Equatable, Action> {
     self.store = Store(initialState: reducer.state) { reducer }
     self.timeout = 1 * 1_000_000_000
     self.sharedChangeTracker = sharedChangeTracker
-    #if !os(Android)
     self.useMainSerialExecutor = true
-    #endif
     self.reducer.store = self
   }
 
@@ -651,9 +647,7 @@ public final class TestStore<State: Equatable, Action> {
   }
 
   deinit {
-    #if !os(Android)
     uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
-    #endif
     mainActorNow { self.completed() }
   }
 
@@ -1003,7 +997,6 @@ extension TestStore {
           column: column
         )
       )
-      #if !os(Android)
       if uncheckedUseMainSerialExecutor {
         await Task.yield()
       } else {
@@ -1011,11 +1004,6 @@ extension TestStore {
           break
         }
       }
-      #else
-      for await _ in self.reducer.effectDidSubscribe.stream {
-        break
-      }
-      #endif
       do {
         let currentState = self.state
         let currentStackElementID = self.reducer.dependencies.stackElementID

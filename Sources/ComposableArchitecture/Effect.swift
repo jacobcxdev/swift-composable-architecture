@@ -467,6 +467,10 @@ extension Publishers {
       var cancellables: [AnyCancellable] = []
       var completions = 0
       let lock = NSLock()
+      // Subscribe downstream FIRST so synchronous emissions (e.g. Just) are not lost.
+      subject
+        .handleEvents(receiveCancel: { cancellables.forEach { $0.cancel() } })
+        .subscribe(subscriber)
       a.sink(
         receiveCompletion: { _ in
           lock.lock()
@@ -487,9 +491,6 @@ extension Publishers {
         },
         receiveValue: { subject.send($0) }
       ).store(in: &cancellables)
-      subject
-        .handleEvents(receiveCancel: { cancellables.forEach { $0.cancel() } })
-        .subscribe(subscriber)
     }
   }
 }

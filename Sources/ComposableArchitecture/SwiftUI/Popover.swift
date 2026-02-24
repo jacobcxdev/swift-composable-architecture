@@ -123,7 +123,6 @@ extension View {
 extension View {
   public func popover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
