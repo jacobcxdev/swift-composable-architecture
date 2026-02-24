@@ -158,7 +158,7 @@ extension Effect {
   /// >
   /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
   ///
-  #if canImport(SwiftUI) && !os(Android)
+  #if canImport(SwiftUI)
   /// - Parameters:
   ///   - action: The action that is immediately emitted by the effect.
   ///   - animation: An animation.
@@ -212,7 +212,7 @@ public struct Send<Action>: Sendable {
     self.send(action)
   }
 
-  #if canImport(SwiftUI) && !os(Android)
+  #if canImport(SwiftUI)
   /// Sends an action back into the system from an effect with animation.
   ///
   /// - Parameters:

@@ -93,12 +93,10 @@ extension View {
                 if let action {
                   store.send(.presented(fromDestinationAction(action)))
                 }
-              #if !os(Android)
               case let .animatedSend(action, animation):
                 if let action {
                   store.send(.presented(fromDestinationAction(action)), animation: animation)
                 }
-              #endif
               }
             } label: {
               Text(button.label)
