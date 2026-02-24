@@ -120,15 +120,10 @@ final class RootCore<Root: Reducer>: Core {
       case let .publisher(publisher):
         var didComplete = false
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-        #if os(Android)
-        // On Android, Swift Concurrency's main serial executor is not the GCD main
-        // dispatch queue. UIScheduler.receive(on:) would route through
-        // DispatchQueue.main which has no run loop, blocking effect delivery.
-        // Skip scheduling since there is no UIKit main thread contract on Android.
-        let scheduled = publisher.eraseToAnyPublisher()
-        #else
+        // UIScheduler routes effects to the main thread on all platforms.
+        // On Android, AndroidLooperExecutor (swift-android-native) drains
+        // DispatchQueue.main via ALooper, so UIScheduler works correctly.
         let scheduled = publisher.receive(on: UIScheduler.shared).eraseToAnyPublisher()
-        #endif
         let effectCancellable = withEscapedDependencies { continuation in
           scheduled
             .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
