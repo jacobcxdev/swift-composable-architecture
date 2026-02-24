@@ -40,6 +40,18 @@ extension ViewActionSending {
   public func send(_ action: StoreAction.ViewAction, transaction: Transaction) -> StoreTask {
     self.store.send(.view(action), transaction: transaction)
   }
+  #else
+  /// Send a view action to the store with animation (no-op on Android).
+  @discardableResult
+  public func send(_ action: StoreAction.ViewAction, animation: Animation?) -> StoreTask {
+    self.store.send(.view(action))
+  }
+
+  /// Send a view action to the store with a transaction (no-op on Android).
+  @discardableResult
+  public func send(_ action: StoreAction.ViewAction, transaction: Transaction) -> StoreTask {
+    self.store.send(.view(action))
+  }
   #endif
 }
 #endif
