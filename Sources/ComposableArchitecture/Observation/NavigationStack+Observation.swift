@@ -205,6 +205,17 @@ public struct _NavigationDestinationViewModifier<
   fileprivate let line: UInt
   fileprivate let column: UInt
 
+  /// The type-discriminating destination key for this modifier's `State` type.
+  ///
+  /// On JVM, generic type erasure causes `String(describing: StackState<A>.Component.self)`
+  /// and `String(describing: StackState<B>.Component.self)` to produce identical strings.
+  /// This key captures the `State` type name at Swift compile time to ensure distinct
+  /// registration keys for multi-destination stacks.
+  @_spi(Internals)
+  public static var destinationKey: String {
+    StackState<State>.Component.destinationKey
+  }
+
   public func body(content: Content) -> some View {
     content
       .environment(\.navigationDestinationType, State.self)
@@ -587,6 +598,32 @@ extension StackState {
     @_spi(Internals)
     public var element: Element
 
+    /// A type-discriminating destination key that includes the `Element` type name.
+    ///
+    /// On JVM, generic type parameters are erased at runtime, so
+    /// `String(describing: StackState<A>.Component.self)` and
+    /// `String(describing: StackState<B>.Component.self)` produce identical strings.
+    /// This property captures the `Element` type name at Swift compile time (where the
+    /// generic parameter is known) to produce a unique key per `Element` type.
+    ///
+    /// Both registration (`navigationDestination(for:)`) and lookup
+    /// (`destinationKeyTransformer`) must use this key for multi-destination stacks
+    /// to work correctly on Android/JVM.
+    @_spi(Internals)
+    public var destinationKey: String {
+      Self.destinationKey
+    }
+
+    /// The static destination key for this Component's Element type.
+    ///
+    /// Uses `_typeName` instead of `String(describing:)` to get the fully qualified
+    /// type name, ensuring that nested types with the same short name (e.g.
+    /// `FeatureA.State` vs `FeatureB.State`) produce distinct keys.
+    @_spi(Internals)
+    public static var destinationKey: String {
+      "StackState.Component<\(_typeName(Element.self))>"
+    }
+
     @_spi(Internals)
     public init(id: StackElementID, element: Element) {
       self.id = id
@@ -660,4 +697,22 @@ extension EnvironmentValues {
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }
 }
+
+// MARK: - NavigationDestinationKeyProviding conformance (Android/JVM type erasure fix)
+//
+// On Android, SkipSwiftUI is available (via SkipFuseUI re-export) and provides the
+// NavigationDestinationKeyProviding protocol. Conforming StackState.Component to this
+// protocol enables skip-fuse-ui's navigationDestination(for:) registration and
+// destinationKeyTransformer lookup to use the type-discriminating destinationKey
+// instead of String(describing:) which erases generic parameters on JVM.
+//
+// On Darwin, SkipSwiftUI's deployment target (macOS 13+) is higher than TCA's
+// (macOS 10.15), so the import is gated on os(Android) only.
+// The destinationKey properties are still accessible via @_spi(Internals) for testing.
+#if os(Android)
+import SkipSwiftUI
+
+extension StackState.Component: NavigationDestinationKeyProviding {}
+#endif
+
 #endif
