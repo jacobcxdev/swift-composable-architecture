@@ -24,7 +24,7 @@ let package = Package(
     .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
     .package(path: "../combine-schedulers"),
     .package(path: "../swift-case-paths"),
-    .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.2.0"),
+    .package(path: "../swift-concurrency-extras"),
     .package(path: "../swift-custom-dump"),
     .package(path: "../swift-dependencies"),
     .package(path: "../swift-identified-collections"),
