@@ -300,6 +300,7 @@ extension BindableAction {
   }
 }
 
+#if !os(Android)
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
@@ -334,7 +335,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     )
   }
 }
+#endif
 
+#if !os(Android)
 /// A property wrapper type that can designate properties of view state that can be directly
 /// bindable in SwiftUI views.
 ///
@@ -804,5 +807,6 @@ extension WithViewStore where ViewState: Equatable, Content: View {
       }
     }
   }
+#endif
 #endif
 #endif

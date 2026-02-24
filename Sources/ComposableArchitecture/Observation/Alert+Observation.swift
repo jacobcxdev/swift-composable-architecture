@@ -24,10 +24,12 @@ extension View {
               if let action {
                 store?.send(action)
               }
+            #if !os(Android)
             case let .animatedSend(action, animation):
               if let action {
                 store?.send(action, animation: animation)
               }
+            #endif
             }
           } label: {
             Text(button.label)
@@ -65,10 +67,12 @@ extension View {
               if let action {
                 store?.send(action)
               }
+            #if !os(Android)
             case let .animatedSend(action, animation):
               if let action {
                 store?.send(action, animation: animation)
               }
+            #endif
             }
           } label: {
             Text(button.label)

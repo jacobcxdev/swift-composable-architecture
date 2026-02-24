@@ -120,7 +120,7 @@
   }
 #endif
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && !os(Android)
   extension Binding {
     @available(
       *, deprecated,
@@ -135,7 +135,7 @@
 
 // NB: Deprecated with 1.10.0:
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && !os(Android)
 @available(*, deprecated, message: "Use '.fileSystem' ('FileStorage.fileSystem') instead")
 public func LiveFileStorage() -> FileStorage { .fileSystem }
 
