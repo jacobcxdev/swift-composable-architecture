@@ -233,16 +233,16 @@ public struct _TCANavigationStack<
 
   public var body: some View {
     let store = pathBinding.wrappedValue
-    let androidPath = Binding<[Any]>(
+    let androidPath = Binding<NavigationPath>(
       get: {
-        store.currentState.path.map { $0 as Any }
+        NavigationPath(store.currentState.path.map { $0 as AnyHashable })
       },
       set: { newPath in
         let currentCount = store.currentState.count
-        if newPath.count > currentCount,
-          let component = newPath.last as? StackState<State>.Component
-        {
-          store.send(.push(id: component.id, state: component.element))
+        if newPath.count > currentCount {
+          // Push: the last element should be the Component we appended
+          // Note: NavigationPath doesn't expose elements, so push is handled
+          // by navigationDestination(for:) callback, not by path set
         } else if newPath.count < currentCount {
           store.send(.popFrom(id: store.currentState.ids[newPath.count]))
         }
@@ -265,6 +265,7 @@ public struct _TCANavigationStack<
 }
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+@MainActor
 public func NavigationStack<State: ObservableState, Action, Destination: View, R: View>(
   path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
   @ViewBuilder root: () -> R,
