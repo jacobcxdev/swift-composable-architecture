@@ -6,7 +6,7 @@ import Foundation
 /// However, applying the ``ObservableState`` protocol by itself to a type doesn’t add observation
 /// functionality to the type. Instead, always use the ``ObservableState()`` macro when adding
 /// observation support to a type.
-#if !os(visionOS) && !os(Android)
+#if !os(visionOS)
   public protocol ObservableState: Perceptible {
     var _$id: ObservableStateID { get }
     mutating func _$willModify()
