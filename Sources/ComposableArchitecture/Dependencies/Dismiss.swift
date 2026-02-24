@@ -87,7 +87,7 @@ public struct DismissEffect: Sendable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    #if canImport(SwiftUI) && !os(Android)
+    #if canImport(SwiftUI)
     await self.callAsFunction(
       animation: nil,
       fileID: fileID,
@@ -119,7 +119,7 @@ public struct DismissEffect: Sendable {
     #endif
   }
 
-  #if canImport(SwiftUI) && !os(Android)
+  #if canImport(SwiftUI)
   @MainActor
   public func callAsFunction(
     animation: Animation?,

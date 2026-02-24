@@ -147,7 +147,6 @@ extension UIBindable {
   }
 }
 
-#if !os(Android)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.
@@ -190,7 +189,6 @@ extension NavigationStack {
     }
   }
 }
-#endif
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct _NavigationDestinationViewModifier<

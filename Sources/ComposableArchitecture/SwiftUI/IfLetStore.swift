@@ -51,7 +51,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///   - ifContent: A function that is given a store of non-optional state and returns a view that
   ///     is visible only when the optional state is non-`nil`.
   ///   - elseContent: A view that is only visible when the optional state is `nil`.
-  #if !os(Android)
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
@@ -90,7 +89,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
       }
     }
   }
-  #endif
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of optional
   /// state is `nil` or non-`nil`.
@@ -142,7 +140,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///   - ifContent: A function that is given a store of non-optional state and returns a view that
   ///     is visible only when the optional state is non-`nil`.
   ///   - elseContent: A view that is only visible when the optional state is `nil`.
-  #if !os(Android)
   @available(
     iOS, deprecated: 9999,
     message:
@@ -179,7 +176,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
       else: elseContent
     )
   }
-  #endif
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
   /// ``PresentationState`` and ``PresentationAction`` is `nil` or non-`nil`.
@@ -237,7 +233,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///     destination state.
   ///   - elseContent: A view that is only visible when state cannot be extracted from the
   ///     destination.
-  #if !os(Android)
   @available(
     *, deprecated,
     message:
@@ -264,7 +259,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
       else: elseContent
     )
   }
-  #endif
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
   /// ``PresentationState`` and ``PresentationAction`` is `nil` or non-`nil` and state can further

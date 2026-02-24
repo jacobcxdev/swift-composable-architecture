@@ -2565,7 +2565,7 @@ extension TestStore {
   }
 }
 
-#if canImport(SwiftUI) && !os(Android)
+#if canImport(SwiftUI)
 extension TestStore {
   /// Returns a binding view store for this store.
   ///

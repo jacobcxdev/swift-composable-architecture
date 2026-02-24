@@ -11,7 +11,7 @@ public var _isInPerceptionTracking: Bool {
 }
 #endif
 
-#if !canImport(SwiftUI) || os(Android)
+#if !canImport(SwiftUI)
 enum BindingLocal {
   @TaskLocal static var isActive = false
 }
