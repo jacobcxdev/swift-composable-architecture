@@ -240,9 +240,13 @@ public struct _TCANavigationStack<
       set: { newPath in
         let currentCount = store.currentState.count
         if newPath.count > currentCount {
-          // Push: the last element should be the Component we appended
-          // Note: NavigationPath doesn't expose elements, so push is handled
-          // by navigationDestination(for:) callback, not by path set
+          // Push: extract the Component from the last path element and dispatch .push
+          // NavigationPath stores AnyHashable elements; the Component arrives as
+          // StackState<State>.Component after SwiftHashable unwrapping in skip-fuse-ui's setData
+          let lastElement = newPath[newPath.count - 1]
+          if let component = lastElement as? StackState<State>.Component {
+            store.send(.push(id: component.id, state: component.element))
+          }
         } else if newPath.count < currentCount {
           store.send(.popFrom(id: store.currentState.ids[newPath.count]))
         }
