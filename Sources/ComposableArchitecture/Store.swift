@@ -6,6 +6,13 @@ import SwiftUI
 #endif
 #if os(Android)
 import SkipAndroidBridge
+
+@inline(__always)
+private func navLog(_ msg: @autoclosure () -> String) {
+    #if FUSE_NAV_DEBUG
+    _navDebugLog(msg())
+    #endif
+}
 #endif
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
@@ -121,7 +128,7 @@ public final class Store<State, Action>: _Store {
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
   #elseif os(Android)
-    let _$observationRegistrar = SkipAndroidBridge.BridgeObservation.BridgeObservationRegistrar()
+    let _$observationRegistrar = SkipAndroidBridge.Observation.ObservationRegistrar()
   #else
     let _$observationRegistrar = Observation.ObservationRegistrar()
   #endif
@@ -357,6 +364,9 @@ public final class Store<State, Action>: _Store {
             }
           } receiveValue: { [weak self] _ in
             guard let self else { return }
+            #if os(Android)
+            navLog("Store.parentCancellable: firing withMutation for \(storeTypeName(of: self))")
+            #endif
             self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
           }
       }
@@ -431,6 +441,9 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 extension Store: Perceptible {}
 extension Store {
   public var state: State {
+    #if os(Android)
+    navLog("Store.state: accessed on \(String(describing: State.self))")
+    #endif
     self._$observationRegistrar.access(self, keyPath: \.currentState)
     return self.currentState
   }
