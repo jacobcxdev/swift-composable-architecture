@@ -60,6 +60,12 @@ extension Effect {
   }
 }
 
+#if canImport(Combine)
+  private typealias _CombineSubscriber = Combine.Subscriber
+#else
+  private typealias _CombineSubscriber = OpenCombine.Subscriber
+#endif
+
 private struct TransactionPublisher<Upstream: Publisher>: Publisher {
   typealias Output = Upstream.Output
   typealias Failure = Upstream.Failure
@@ -67,12 +73,12 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
   var upstream: Upstream
   var transaction: Transaction
 
-  func receive(subscriber: some Combine.Subscriber<Upstream.Output, Upstream.Failure>) {
+  func receive(subscriber: some _CombineSubscriber<Upstream.Output, Upstream.Failure>) {
     let conduit = Subscriber(downstream: subscriber, transaction: self.transaction)
     self.upstream.receive(subscriber: conduit)
   }
 
-  private final class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
+  private final class Subscriber<Downstream: _CombineSubscriber>: _CombineSubscriber {
     typealias Input = Downstream.Input
     typealias Failure = Downstream.Failure
 

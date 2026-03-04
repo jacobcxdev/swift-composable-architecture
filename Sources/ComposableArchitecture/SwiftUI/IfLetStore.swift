@@ -43,6 +43,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   private let content: (ViewStore<State?, Action>) -> Content
   private let store: Store<State?, Action>
 
+  #if !os(Android)
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of optional
   /// state is `nil` or non-`nil`.
   ///
@@ -89,6 +90,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
       }
     }
   }
+  #endif
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of optional
   /// state is `nil` or non-`nil`.
@@ -132,6 +134,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     }
   }
 
+  #if !os(Android)
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
   /// ``PresentationState`` and ``PresentationAction`` is `nil` or non-`nil`.
   ///
@@ -176,6 +179,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
       else: elseContent
     )
   }
+  #endif
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
   /// ``PresentationState`` and ``PresentationAction`` is `nil` or non-`nil`.
@@ -219,6 +223,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     )
   }
 
+  #if !os(Android)
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
   /// ``PresentationState`` and ``PresentationAction`` is `nil` or non-`nil` and state can further
   /// be extracted from the destination state, _e.g._ it matches a particular case of an enum.
@@ -259,6 +264,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
       else: elseContent
     )
   }
+  #endif
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
   /// ``PresentationState`` and ``PresentationAction`` is `nil` or non-`nil` and state can further

@@ -147,6 +147,9 @@ extension UIBindable {
   }
 }
 
+// TODO: Fix actor isolation error on Android: "cannot form key path to main actor-isolated subscript"
+// Track in separate plan — the subscript on StackState.PathView needs actor isolation review.
+#if !os(Android)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.
@@ -189,6 +192,7 @@ extension NavigationStack {
     }
   }
 }
+#endif  // !os(Android)
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct _NavigationDestinationViewModifier<
@@ -228,6 +232,16 @@ public struct _NavigationDestinationViewModifier<
 }
 
 #if os(Android)
+import Foundation
+import SkipAndroidBridge
+
+@inline(__always)
+private func navLog(_ msg: @autoclosure () -> String) {
+    #if FUSE_NAV_DEBUG
+    _navDebugLog(msg())
+    #endif
+}
+
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct _TCANavigationStack<
   State: ObservableState, Action, Root: View, Destination: View
@@ -241,10 +255,13 @@ public struct _TCANavigationStack<
   let column: UInt
 
   public var body: some View {
+    let _ = navLog("_TCANavStack.body: evaluating")
     let store = pathBinding.wrappedValue
     let androidPath = Binding<NavigationPath>(
       get: {
-        NavigationPath(store.currentState.path.map { $0 as AnyHashable })
+        store._$observationRegistrar.access(store, keyPath: \.currentState)
+        navLog("_TCANavStack.get: pathCount=\(store.currentState.count)")
+        return NavigationPath(store.currentState.path.map { $0 as AnyHashable })
       },
       set: { newPath in
         let currentCount = store.currentState.count
@@ -254,25 +271,30 @@ public struct _TCANavigationStack<
           // StackState<State>.Component after SwiftHashable unwrapping in skip-fuse-ui's setData
           let lastElement = newPath[newPath.count - 1]
           if let component = lastElement as? StackState<State>.Component {
+            navLog("_TCANavStack.set: PUSH component=\(component.id)")
             store.send(.push(id: component.id, state: component.element))
+          } else {
+            navLog("_TCANavStack.set: push FAILED - lastElement type=\(type(of: lastElement))")
           }
         } else if newPath.count < currentCount {
+          navLog("_TCANavStack.set: POP from id=\(store.currentState.ids[newPath.count])")
           store.send(.popFrom(id: store.currentState.ids[newPath.count]))
         }
       }
     )
+    // On Android, SkipSwiftUI's ViewModifier bridging uses Java_modifier (not body()),
+    // so _NavigationDestinationViewModifier.body() is never called. Inline the destination
+    // registration directly to ensure it reaches skip-fuse-ui's navigationDestination(for:).
     NavigationStack(path: androidPath) {
       root
-        .modifier(
-          _NavigationDestinationViewModifier(
-            store: store,
-            destination: destination,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
+        .environment(\.navigationDestinationType, State.self)
+        .navigationDestination(for: StackState<State>.Component.self) { component in
+          destination(
+            store.scope(
+              component: component, fileID: fileID, filePath: filePath, line: line, column: column)
           )
-        )
+          .environment(\.navigationDestinationType, State.self)
+        }
     }
   }
 }
@@ -711,6 +733,19 @@ extension EnvironmentValues {
 import SkipSwiftUI
 
 extension StackState.Component: NavigationDestinationKeyProviding {}
+
+private struct _UncheckedSendableView: @unchecked Sendable {
+    let view: any SkipUI.View
+}
+
+extension _TCANavigationStack: SkipUIBridging {
+    public nonisolated var Java_view: any SkipUI.View {
+        navLog("_TCANavStack.Java_view: bridging")
+        return MainActor.assumeIsolated {
+            _UncheckedSendableView(view: body.Java_viewOrEmpty)
+        }.view
+    }
+}
 #endif
 
 #endif

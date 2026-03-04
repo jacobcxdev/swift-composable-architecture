@@ -28,7 +28,7 @@ let package = Package(
     .package(path: "../swift-custom-dump"),
     .package(path: "../swift-dependencies"),
     .package(path: "../swift-identified-collections"),
-    .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
+    .package(path: "../swift-macro-testing"),
     .package(path: "../swift-navigation"),
     .package(path: "../swift-perception"),
     .package(path: "../swift-sharing"),
