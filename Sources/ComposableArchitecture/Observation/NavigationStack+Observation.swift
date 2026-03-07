@@ -746,6 +746,14 @@ extension _TCANavigationStack: SkipUIBridging {
         }.view
     }
 }
+
+extension _NavigationLinkStoreContent: SkipUIBridging {
+    public nonisolated var Java_view: any SkipUI.View {
+        return MainActor.assumeIsolated {
+            _UncheckedSendableView(view: body.Java_viewOrEmpty)
+        }.view
+    }
+}
 #endif
 
 #endif
