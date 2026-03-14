@@ -14,7 +14,7 @@ private struct ForEachBindingTestCase {
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .change(offset: offset, value: value):
+      case .change(let offset, let value):
         state.values[offset] = value
         return .none
 

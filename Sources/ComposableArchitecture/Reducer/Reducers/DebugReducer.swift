@@ -33,11 +33,12 @@ public struct _ReducerPrinter<State, Action>: Sendable {
   let queue: DispatchQueue
 
   public init(
-    printChange: @escaping @Sendable (
-      _ receivedAction: Action,
-      _ oldState: State,
-      _ newState: State
-    ) -> Void,
+    printChange:
+      @escaping @Sendable (
+        _ receivedAction: Action,
+        _ oldState: State,
+        _ newState: State
+      ) -> Void,
     queue: DispatchQueue? = nil
   ) {
     self._printChange = printChange
@@ -82,14 +83,14 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
   }
 
   #if DEBUG
-    public func reduce(
+    public func _reduce(
       into state: inout Base.State, action: Base.Action
-    ) -> Effect<Base.Action> {
+    ) -> _Effect<Base.Action> {
       if let printer = self.printer {
         let changeTracker = SharedChangeTracker(reportUnassertedChanges: false)
         return changeTracker.track {
           let oldState = UncheckedSendable(state)
-          let effects = self.base.reduce(into: &state, action: action)
+          let effects = self.base._reduce(into: &state, action: action)
           return withEscapedDependencies { continuation in
             effects.merge(
               with: .publisher {
@@ -117,14 +118,14 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
           }
         }
       }
-      return self.base.reduce(into: &state, action: action)
+      return self.base._reduce(into: &state, action: action)
     }
   #else
     @inlinable
-    public func reduce(
+    public func _reduce(
       into state: inout Base.State, action: Base.Action
     ) -> Effect<Base.Action> {
-      return self.base.reduce(into: &state, action: action)
+      return self.base._reduce(into: &state, action: action)
     }
   #endif
 }

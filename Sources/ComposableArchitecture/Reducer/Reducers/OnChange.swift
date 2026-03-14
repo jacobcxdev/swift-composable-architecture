@@ -1,67 +1,6 @@
 extension Reducer {
   /// Adds a reducer to run when this reducer changes the given value in state.
   ///
-  /// Use this operator to trigger additional logic when a value changes, like when a
-  /// ``BindingReducer`` makes a deeper change to a struct held in ``BindingState``.
-  ///
-  /// ```swift
-  /// @Reducer
-  /// struct Settings {
-  ///   struct State {
-  ///     @BindingState var userSettings: UserSettings
-  ///     // ...
-  ///   }
-  ///
-  ///   enum Action: BindableAction {
-  ///     case binding(BindingAction<State>)
-  ///     // ...
-  ///   }
-  ///
-  ///   var body: some Reducer<State, Action> {
-  ///     BindingReducer()
-  ///       .onChange(
-  ///         of: { ($0.userSettings.isHapticFeedbackEnabled, $0.userSettings.isPushEnabled) },
-  ///         removeDuplicates: ==
-  ///       ) { oldValue, newValue in
-  ///         Reduce { state, action in
-  ///           .run { send in
-  ///             // Persist new value...
-  ///           }
-  ///         }
-  ///       }
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// When the value changes, the new version of the closure will be called, so any captured values
-  /// will have their values from the time that the observed value has its new value. The system
-  /// passes the old and new observed values into the closure.
-  ///
-  /// > Note: Take care when applying `onChange(of:)` to a reducer, as it adds an equatable check
-  /// > for every action fed into it. Prefer applying it to leaf nodes, like ``BindingReducer``,
-  /// > against values that are quick to equate.
-  ///
-  /// - Parameters:
-  ///   - toValue: A closure that returns a value from the given state.
-  ///   - isDuplicate: A closure to evaluate whether two elements are equivalent, for purposes of
-  ///     filtering. Return `true` from this closure to indicate that the second element is a
-  ///     duplicate of the first.
-  ///   - reducer: A reducer builder closure to run when the value changes.
-  ///     - oldValue: The old value that failed the comparison check.
-  ///     - newValue: The new value that failed the comparison check.
-  /// - Returns: A reducer that performs the logic when the state changes.
-  @available(*, deprecated, message: "Use 'onChange(of:)' with and equatable value, instead.")
-  @inlinable
-  public func onChange<V, R: Reducer>(
-    of toValue: @escaping (State) -> V,
-    removeDuplicates isDuplicate: @escaping (V, V) -> Bool,
-    @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
-  ) -> _OnChangeReducer<Self, V, R> {
-    _OnChangeReducer(base: self, toValue: toValue, isDuplicate: isDuplicate, reducer: reducer)
-  }
-
-  /// Adds a reducer to run when this reducer changes the given value in state.
-  ///
   /// > Important: The `onChange` operator is only capable of detecting changes made by the reducer
   /// > it is directly attached to. It does not observe changes that are made from other actions,
   /// > such as parent actions.
@@ -72,8 +11,9 @@ extension Reducer {
   /// ```swift
   /// @Reducer
   /// struct Settings {
+  ///   @ObservableState
   ///   struct State {
-  ///     @BindingState var userSettings: UserSettings
+  ///     var userSettings: UserSettings
   ///     // ...
   ///   }
   ///
@@ -84,11 +24,9 @@ extension Reducer {
   ///
   ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
-  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled) { oldValue, newValue in
-  ///         Reduce { state, action in
-  ///           .run { send in
-  ///             // Persist new value...
-  ///           }
+  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled) { oldValue, state in
+  ///         .run { [newValue = state.userSettings.isHapticFeedbackEnabled] send in
+  ///           // Persist new value...
   ///         }
   ///       }
   ///   }
@@ -105,10 +43,50 @@ extension Reducer {
   ///
   /// - Parameters:
   ///   - toValue: A closure that returns a value from the given state.
-  ///   - reducer: A reducer builder closure to run when the value changes.
+  ///   - perform: A closure to run when the value changes and optionally kick off an effect.
   ///     - `oldValue`: The old value that failed the comparison check.
-  ///     - `newValue`: The new value that failed the comparison check.
+  ///     - `state`: The current, mutable state of the feature.
   /// - Returns: A reducer that performs the logic when the state changes.
+  @inlinable
+  public func onChange<V: Equatable>(
+    of toValue: @escaping (State) -> V,
+    _ perform: @escaping (_ oldValue: V, _ state: inout State) -> EffectOf<Self>
+  ) -> some Reducer<State, Action> {
+    _OnChangeReducer(base: self, toValue: toValue, isDuplicate: ==) { oldValue, _ in
+      Reduce(internal: { state, action in
+        perform(oldValue, &state)
+      })
+    }
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+  #endif
   @inlinable
   public func onChange<V: Equatable, R: Reducer>(
     of toValue: @escaping (State) -> V,
@@ -146,12 +124,12 @@ where Base.State == Body.State, Base.Action == Body.Action {
   }
 
   @inlinable
-  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> _Effect<Base.Action> {
     let oldValue = toValue(state)
-    let baseEffects = self.base.reduce(into: &state, action: action)
+    let baseEffects = self.base._reduce(into: &state, action: action)
     let newValue = toValue(state)
     return isDuplicate(oldValue, newValue)
       ? baseEffects
-      : .merge(baseEffects, self.reducer(oldValue, newValue).reduce(into: &state, action: action))
+      : .merge(baseEffects, self.reducer(oldValue, newValue)._reduce(into: &state, action: action))
   }
 }

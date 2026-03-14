@@ -106,11 +106,7 @@ private func navLog(_ msg: @autoclosure () -> String) {
 /// package when targeting iOS <17) by applying the ``ObservableState()`` macro to your feature's
 /// state.
 @dynamicMemberLookup
-#if swift(<5.10)
-  @MainActor(unsafe)
-#else
-  @preconcurrency@MainActor
-#endif
+@preconcurrency @MainActor
 public final class Store<State, Action>: _Store {
   var children: [ScopeID<State, Action>: AnyObject] = [:]
   private weak var parent: (any _Store)?
@@ -165,30 +161,9 @@ public final class Store<State, Action>: _Store {
 
   deinit {
     guard Thread.isMainThread else { return }
-    MainActor._assumeIsolated {
+    MainActor.assumeIsolated {
       Logger.shared.log("\(storeTypeName(of: self)).deinit")
     }
-  }
-
-  /// Calls the given closure with a snapshot of the current state of the store.
-  ///
-  /// A lightweight way of accessing store state when state is not observable and ``state-1qxwl`` is
-  /// unavailable.
-  ///
-  /// - Parameter body: A closure that takes the current state of the store as its sole argument. If
-  ///   the closure has a return value, that value is also used as the return value of the
-  ///   `withState` method. The state argument reflects the current state of the store only for the
-  ///   duration of the closure's execution, and is only observable over time, _e.g._ by SwiftUI, if
-  ///   it conforms to ``ObservableState``.
-  /// - Returns: The return value, if any, of the `body` closure.
-  public func withState<R>(_ body: (_ state: State) -> R) -> R {
-    #if DEBUG
-      _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-        body(self.currentState)
-      }
-    #else
-      body(self.currentState)
-    #endif
   }
 
   /// Sends an action to the store.
@@ -305,19 +280,6 @@ public final class Store<State, Action>: _Store {
     return child
   }
 
-  @available(
-    *,
-    deprecated,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
-  ) -> Store<ChildState, ChildAction> {
-    _scope(state: toChildState, action: fromChildAction)
-  }
-
   func _scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
@@ -340,7 +302,7 @@ public final class Store<State, Action>: _Store {
   @_spi(Internals)
   @_disfavoredOverload
   public func send(_ action: Action) -> Task<Void, Never>? {
-    core.send(action)
+    core.send(action, origin: .store)
   }
 
   private init(core: some Core<State, Action>, scopeID: AnyHashable?, parent: (any _Store)?) {
@@ -394,6 +356,30 @@ public final class Store<State, Action>: _Store {
   /// store.publisher.alert
   ///   .sink { ... }
   /// ```
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Use observation ('Observations', 'observe') instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
+  #endif
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
@@ -465,6 +451,30 @@ extension Store: Identifiable {}
 #endif
 
 /// A publisher of store state.
+#if ComposableArchitecture2Deprecations
+  @available(*, deprecated, message: "Use observation ('Observations', 'observe') instead")
+#else
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
+#endif
 @dynamicMemberLookup
 public struct StorePublisher<State>: Publisher {
   public typealias Output = State

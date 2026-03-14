@@ -109,7 +109,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     }
 
     let task = await store.send(true)
-    await task.finish(timeout: NSEC_PER_SEC / 2)
+    await task.finish(timeout: .seconds(0.5))
     XCTExpectFailure {
       $0.compactDescription.hasSuffix("There were no in-flight effects to skip.")
     }
@@ -295,7 +295,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         case .increment:
           state.count += 1
           return .send(.loggedInResponse(true))
-        case let .loggedInResponse(response):
+        case .loggedInResponse(let response):
           state.isLoggedIn = response
           return .none
         }
@@ -331,7 +331,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         case .increment:
           state.count += 1
           return .send(.loggedInResponse(true))
-        case let .loggedInResponse(response):
+        case .loggedInResponse(let response):
           state.isLoggedIn = response
           return .none
         }
@@ -461,7 +461,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         case .tap:
           state += 1
           return .run { [state] send in await send(.response(state + 42)) }
-        case let .response(number):
+        case .response(let number):
           state = number
           return .none
         }
@@ -497,7 +497,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
             try await testScheduler.sleep(for: .seconds(1))
             await send(.response(1729))
           }
-        case let .response(number):
+        case .response(let number):
           state = number
           return .none
         }
@@ -747,9 +747,9 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         switch action {
         case .tap:
           return .run { send in
-            try await Task.sleep(nanoseconds: 10_000_000)
+            try await Task.sleep(for: .milliseconds(10))
             await send(.response1)
-            try await Task.sleep(nanoseconds: 10_000_000)
+            try await Task.sleep(for: .milliseconds(10))
             await send(.response2)
           }
         case .response1, .response2:
@@ -760,7 +760,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     store.exhaustivity = .off
 
     await store.send(.tap)
-    await store.receive(.response2, timeout: 1_000_000_000)
+    await store.receive(.response2, timeout: .seconds(1))
   }
 
   @MainActor
@@ -772,9 +772,9 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         switch action {
         case .tap:
           return .run { send in
-            try await Task.sleep(nanoseconds: 10_000_000)
+            try await Task.sleep(for: .milliseconds(10))
             await send(.response1)
-            try await Task.sleep(nanoseconds: 10_000_000)
+            try await Task.sleep(for: .milliseconds(10))
             await send(.response1)
           }
         case .response1:
@@ -796,7 +796,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
           "Expected to receive the following action, but didn't")
           && issue.compactDescription.contains("Action.response2"))
     }
-    await store.receive(.response2, timeout: 1_000_000_000)
+    await store.receive(.response2, timeout: .seconds(1))
   }
 
   @MainActor
@@ -808,9 +808,9 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         switch action {
         case .tap:
           return .run { send in
-            try await Task.sleep(nanoseconds: 10_000_000)
+            try await Task.sleep(for: .milliseconds(10))
             await send(.response2)
-            try await Task.sleep(nanoseconds: 10_000_000)
+            try await Task.sleep(for: .milliseconds(10))
             await send(.response2)
           }
         case .response1, .response2:
@@ -821,8 +821,8 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     store.exhaustivity = .off
 
     await store.send(.tap)
-    await store.receive(.response2, timeout: 1_000_000_000)
-    await store.receive(.response2, timeout: 1_000_000_000)
+    await store.receive(.response2, timeout: .seconds(1))
+    await store.receive(.response2, timeout: .seconds(1))
   }
 
   @MainActor
@@ -979,11 +979,11 @@ struct NonExhaustiveReceive {
           .send(.response1(42)),
           .send(.response2("Hello"))
         )
-      case let .response1(int):
+      case .response1(let int):
         state.count += 1
         state.int = int
         return .none
-      case let .response2(string):
+      case .response2(let string):
         state.count += 1
         state.string = string
         return .none
@@ -1014,7 +1014,7 @@ struct KrzysztofExample {
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .changeIdentity(name, surname):
+      case .changeIdentity(let name, let surname):
         state.name = name
         state.surname = surname
         return .none
@@ -1027,10 +1027,10 @@ struct KrzysztofExample {
           _ = await (changeAge, changeMood)
         }
 
-      case let .changeAge(age):
+      case .changeAge(let age):
         state.age = age
         return .none
-      case let .changeMood(mood):
+      case .changeMood(let mood):
         state.mood = mood
         return .none
       }

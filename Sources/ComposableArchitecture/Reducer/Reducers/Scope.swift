@@ -165,184 +165,14 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     )
   }
 
-  /// Initializes a reducer that runs the given child reducer against a slice of parent state and
-  /// actions.
-  ///
-  /// Useful for combining reducers of mutually-exclusive enum state.
-  ///
-  /// ```swift
-  /// var body: some Reducer<State, Action> {
-  ///   Scope(state: \.loggedIn, action: \.loggedIn) {
-  ///     LoggedIn()
-  ///   }
-  ///   Scope(state: \.loggedOut, action: \.loggedOut) {
-  ///     LoggedOut()
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// > Warning: Be careful when assembling reducers that are scoped to cases of enum state. If a
-  /// > scoped reducer receives a child action when its state is set to an unrelated case, it will
-  /// > not be able to process the action, which is considered an application logic error and will
-  /// > emit runtime warnings.
-  /// >
-  /// > This can happen if another reducer in the parent domain changes the child state to an
-  /// > unrelated case when it handles the action _before_ the scoped reducer runs. For example, a
-  /// > parent may receive a dismissal action from the child domain:
-  /// >
-  /// > ```swift
-  /// > Reduce { state, action in
-  /// >   switch action {
-  /// >   case .loggedIn(.quitButtonTapped):
-  /// >     state = .loggedOut(LoggedOut.State())
-  /// >   // ...
-  /// >   }
-  /// > }
-  /// > Scope(state: \.loggedIn, action: \.loggedIn) {
-  /// >   LoggedIn()  // ⚠️ Logged-in domain can't handle `quitButtonTapped`
-  /// > }
-  /// > ```
-  /// >
-  /// > If the parent domain contains additional logic for switching between cases of child state,
-  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:filePath:line:column:)-7sg8d``, which better ensures that
-  /// > child logic runs _before_ any parent logic can replace child state:
-  /// >
-  /// > ```swift
-  /// > Reduce { state, action in
-  /// >   switch action {
-  /// >   case .loggedIn(.quitButtonTapped):
-  /// >     state = .loggedOut(LoggedOut.State())
-  /// >   // ...
-  /// >   }
-  /// > }
-  /// > .ifCaseLet(\.loggedIn, action: \.loggedIn) {
-  /// >   LoggedIn()  // ✅ Receives actions before its case can change
-  /// > }
-  /// > ```
-  ///
-  /// - Parameters:
-  ///   - toChildState: A case path from parent state to a case containing child state.
-  ///   - toChildAction: A case path from parent action to a case containing child actions.
-  ///   - child: A reducer that will be invoked with child actions against child state.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
   @inlinable
-  public init<ChildState, ChildAction>(
-    state toChildState: CaseKeyPath<ParentState, ChildState>,
-    action toChildAction: CaseKeyPath<ParentAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) where ChildState == Child.State, ChildAction == Child.Action {
-    self.init(
-      toChildState: .casePath(
-        AnyCasePath(toChildState),
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      ),
-      toChildAction: AnyCasePath(toChildAction),
-      child: child()
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  public init<ChildState, ChildAction>(
-    state toChildState: WritableKeyPath<ParentState, ChildState>,
-    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> child: () -> Child
-  ) where ChildState == Child.State, ChildAction == Child.Action {
-    self.init(
-      toChildState: .keyPath(toChildState),
-      toChildAction: toChildAction,
-      child: child()
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  public init<ChildState, ChildAction>(
-    state toChildState: AnyCasePath<ParentState, ChildState>,
-    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) where ChildState == Child.State, ChildAction == Child.Action {
-    self.init(
-      toChildState: .casePath(
-        toChildState,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      ),
-      toChildAction: toChildAction,
-      child: child()
-    )
-  }
-
-  @inlinable
-  public func reduce(
+  public func _reduce(
     into state: inout ParentState, action: ParentAction
-  ) -> Effect<ParentAction> {
+  ) -> _Effect<ParentAction> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     switch self.toChildState {
-    case let .casePath(toChildState, fileID, filePath, line, column):
+    case .casePath(let toChildState, let fileID, let filePath, let line, let column):
       guard var childState = toChildState.extract(from: state) else {
         reportIssue(
           """
@@ -382,12 +212,12 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
       defer { state = toChildState.embed(childState) }
 
       return self.child
-        .reduce(into: &childState, action: childAction)
+        ._reduce(into: &childState, action: childAction)
         .map { [toChildAction] in toChildAction.embed($0) }
 
-    case let .keyPath(toChildState):
+    case .keyPath(let toChildState):
       return self.child
-        .reduce(into: &state[keyPath: toChildState], action: childAction)
+        ._reduce(into: &state[keyPath: toChildState], action: childAction)
         .map { [toChildAction] in toChildAction.embed($0) }
     }
   }

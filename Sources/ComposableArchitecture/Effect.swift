@@ -4,7 +4,33 @@ import Foundation
 import SwiftUI
 #endif
 
-public struct Effect<Action>: Sendable {
+#if ComposableArchitecture2Deprecations
+  @available(*, deprecated, message: "Use 'EffectOf<Feature>' instead")
+#else
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
+#endif
+public typealias Effect = _Effect
+
+public struct _Effect<Action>: Sendable {
   @usableFromInline
   enum Operation: Sendable {
     case none
@@ -12,7 +38,7 @@ public struct Effect<Action>: Sendable {
     case run(
       name: String? = nil,
       priority: TaskPriority? = nil,
-      operation: @Sendable (_ send: Send<Action>) async -> Void
+      operation: @Sendable (_ send: _Send<Action>) async -> Void
     )
   }
 
@@ -38,11 +64,11 @@ public struct Effect<Action>: Sendable {
 /// ```swift
 /// let effect: EffectOf<Feature>
 /// ```
-public typealias EffectOf<R: Reducer> = Effect<R.Action>
+public typealias EffectOf<R: Reducer> = _Effect<R.Action>
 
 // MARK: - Creating Effects
 
-extension Effect {
+extension _Effect {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
   @inlinable
@@ -94,8 +120,8 @@ extension Effect {
   public static func run(
     priority: TaskPriority? = nil,
     name: String? = nil,
-    operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
-    catch handler: (@Sendable (_ error: any Error, _ send: Send<Action>) async -> Void)? = nil,
+    operation: @escaping @Sendable (_ send: _Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (_ error: any Error, _ send: _Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -149,24 +175,33 @@ extension Effect {
   public static func send(_ action: Action) -> Self {
     Self(operation: .publisher(Just(action).eraseToAnyPublisher()))
   }
-
-  /// Initializes an effect that immediately emits the action passed in.
-  ///
-  /// > Note: We do not recommend using `Effect.send` to share logic. Instead, limit usage to
-  /// > child-parent communication, where a child may want to emit a "delegate" action for a parent
-  /// > to listen to.
-  /// >
-  /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
-  ///
-  #if canImport(SwiftUI)
-  /// - Parameters:
-  ///   - action: The action that is immediately emitted by the effect.
-  ///   - animation: An animation.
-  public static func send(_ action: Action, animation: Animation? = nil) -> Self {
-    .send(action).animation(animation)
-  }
-  #endif
 }
+
+#if ComposableArchitecture2Deprecations
+  @available(*, deprecated, message: "Use 'SendOf<Feature>' instead")
+#else
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
+#endif
+public typealias Send = _Send
 
 /// A type that can send actions back into the system when used from
 /// ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)``.
@@ -197,7 +232,7 @@ extension Effect {
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
-public struct Send<Action>: Sendable {
+public struct _Send<Action>: Sendable {
   let send: @MainActor @Sendable (Action) -> Void
 
   public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
@@ -236,9 +271,11 @@ public struct Send<Action>: Sendable {
   #endif
 }
 
+public typealias SendOf<R: Reducer> = _Send<R.Action>
+
 // MARK: - Composing Effects
 
-extension Effect {
+extension _Effect {
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
   /// same time.
   ///
@@ -304,6 +341,30 @@ extension Effect {
   ///
   /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+  #endif
   @inlinable
   public static func concatenate(_ effects: Self...) -> Self {
     Self.concatenate(effects)
@@ -314,6 +375,30 @@ extension Effect {
   ///
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+  #endif
   @inlinable
   public static func concatenate(_ effects: some Collection<Self>) -> Self {
     effects.reduce(.none) { $0.concatenate(with: $1) }
@@ -325,6 +410,30 @@ extension Effect {
   /// - Parameter other: Another effect.
   /// - Returns: An effect that runs this effect, and after it completes or is cancelled, runs the
   ///   other.
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+  #endif
   @inlinable
   @_disfavoredOverload
   public func concatenate(with other: Self) -> Self {
@@ -371,8 +480,36 @@ extension Effect {
   /// - Parameter transform: A closure that transforms the upstream effect's action to a new action.
   /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
   ///   to new elements that it then publishes.
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+  #endif
   @inlinable
-  public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> Effect<T> {
+  public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> _Effect<T> {
     switch self.operation {
     case .none:
       return .none
@@ -398,7 +535,7 @@ extension Effect {
           operation: .run(name: name, priority: priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
+                _Send { action in
                   send(transform(action))
                 }
               )

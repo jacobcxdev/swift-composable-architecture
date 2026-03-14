@@ -82,53 +82,6 @@ extension Reducer {
       column: column
     )
   }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func ifCaseLet<CaseState, CaseAction, Case: Reducer<CaseState, CaseAction>>(
-    _ toCaseState: AnyCasePath<State, CaseState>,
-    action toCaseAction: AnyCasePath<Action, CaseAction>,
-    @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> some Reducer<State, Action> {
-    _IfCaseLetReducer(
-      parent: self,
-      child: `case`(),
-      toChildState: toCaseState,
-      toChildAction: toCaseAction,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
 }
 
 public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
@@ -179,20 +132,20 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     self.column = column
   }
 
-  public func reduce(
+  public func _reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action> {
+  ) -> _Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
     let childIDBefore = self.toChildState.extract(from: state).map {
       NavigationID(root: state, value: $0, casePath: self.toChildState)
     }
-    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let parentEffects = self.parent._reduce(into: &state, action: action)
     let childIDAfter = self.toChildState.extract(from: state).map {
       NavigationID(root: state, value: $0, casePath: self.toChildState)
     }
 
-    let childCancelEffects: Effect<Parent.Action>
+    let childCancelEffects: _Effect<Parent.Action>
     if let childElement = childIDBefore, childElement != childIDAfter {
       childCancelEffects = .cancel(id: childElement)
     } else {
@@ -208,7 +161,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
 
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action> {
+  ) -> _Effect<Parent.Action> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
@@ -249,7 +202,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     let newNavigationID = self.navigationIDPath.appending(childID)
     return self.child
       .dependency(\.navigationIDPath, newNavigationID)
-      .reduce(into: &childState, action: childAction)
+      ._reduce(into: &childState, action: childAction)
       .map { [toChildAction] in toChildAction.embed($0) }
       .cancellable(id: childID)
   }

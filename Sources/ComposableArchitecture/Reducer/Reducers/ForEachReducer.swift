@@ -17,7 +17,7 @@ public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable {
       AnyCasePath(
         embed: { .element(id: $0, action: $1) },
         extract: {
-          guard case let .element(id, action) = $0 else { return nil }
+          guard case .element(let id, let action) = $0 else { return nil }
           return (id, action)
         }
       )
@@ -139,61 +139,6 @@ extension Reducer {
       column: column
     )
   }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func forEach<
-    ElementState,
-    ElementAction,
-    ID: Hashable & Sendable,
-    Element: Reducer<ElementState, ElementAction>
-  >(
-    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-    action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
-    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> some Reducer<State, Action> {
-    _ForEachReducer(
-      parent: self,
-      toElementsState: toElementsState,
-      toElementAction: .init(
-        embed: { toElementAction.embed($0) },
-        extract: { toElementAction.extract(from: $0) }
-      ),
-      element: element(),
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
 }
 
 public struct _ForEachReducer<
@@ -246,16 +191,16 @@ public struct _ForEachReducer<
     self.column = column
   }
 
-  public func reduce(
+  public func _reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action> {
+  ) -> _Effect<Parent.Action> {
     let elementEffects = self.reduceForEach(into: &state, action: action)
 
     let idsBefore = state[keyPath: self.toElementsState].ids
-    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let parentEffects = self.parent._reduce(into: &state, action: action)
     let idsAfter = state[keyPath: self.toElementsState].ids
 
-    let elementCancelEffects: Effect<Parent.Action> =
+    let elementCancelEffects: _Effect<Parent.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
@@ -276,7 +221,7 @@ public struct _ForEachReducer<
 
   func reduceForEach(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action> {
+  ) -> _Effect<Parent.Action> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
       reportIssue(
@@ -311,7 +256,7 @@ public struct _ForEachReducer<
     let elementNavigationID = self.navigationIDPath.appending(navigationID)
     return self.element
       .dependency(\.navigationIDPath, elementNavigationID)
-      .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
+      ._reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
       .map { [toElementAction] in toElementAction.embed((id, $0)) }
       ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }

@@ -58,15 +58,15 @@ public struct _SignpostReducer<Base: Reducer>: Reducer {
   }
 
   @inlinable
-  public func reduce(
+  public func _reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> Effect<Base.Action> {
+  ) -> _Effect<Base.Action> {
     var actionOutput: String!
     if self.log.signpostsEnabled {
       actionOutput = debugCaseOutput(action)
       os_signpost(.begin, log: log, name: "Action", "%s%s", self.prefix, actionOutput)
     }
-    let effects = self.base.reduce(into: &state, action: action)
+    let effects = self.base._reduce(into: &state, action: action)
     if self.log.signpostsEnabled {
       os_signpost(.end, log: self.log, name: "Action")
       return
@@ -77,7 +77,7 @@ public struct _SignpostReducer<Base: Reducer>: Reducer {
   }
 }
 
-extension Effect {
+extension _Effect {
   @usableFromInline
   func effectSignpost(
     _ prefix: String,
@@ -89,7 +89,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return self
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return .init(
         operation: .publisher(
           publisher.handleEvents(
@@ -115,7 +115,7 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       return .init(
         operation: .run(name: name, priority: priority) { send in
           os_signpost(
@@ -123,7 +123,7 @@ extension Effect {
             actionOutput
           )
           await operation(
-            Send { action in
+            _Send { action in
               os_signpost(
                 .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
               )

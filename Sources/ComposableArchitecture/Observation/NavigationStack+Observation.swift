@@ -57,11 +57,7 @@ extension Binding {
   ///   }
   /// }
   /// ```
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -73,11 +69,7 @@ extension Binding {
 
 #if !os(Android)
 extension ObservedObject.Wrapper {
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -94,11 +86,7 @@ extension SwiftUI.Bindable {
   ///
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -133,11 +121,7 @@ extension UIBindable {
   ///
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -147,10 +131,7 @@ extension UIBindable {
   }
 }
 
-// TODO: Fix actor isolation error on Android: "cannot form key path to main actor-isolated subscript"
-// Track in separate plan — the subscript on StackState.PathView needs actor isolation review.
 #if !os(Android)
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.
   ///
@@ -194,7 +175,6 @@ extension NavigationStack {
 }
 #endif  // !os(Android)
 
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct _NavigationDestinationViewModifier<
   State: ObservableState, Action, Destination: View
 >:
@@ -365,7 +345,6 @@ extension Store {
   }
 }
 
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
   /// Creates a navigation link that presents the view corresponding to an element of
   /// ``StackState``.
@@ -384,9 +363,7 @@ extension NavigationLink where Destination == Never {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  #if compiler(>=6)
-    @MainActor
-  #endif
+  @MainActor
   public init<P, L: View>(
     state: P?,
     @ViewBuilder label: () -> L,
@@ -425,9 +402,7 @@ extension NavigationLink where Destination == Never {
   ///     copy of the value. Pass a `nil` value to disable the link.
   ///   - fileID: The fileID.
   ///   - line: The line.
-  #if compiler(>=6)
-    @MainActor
-  #endif
+  @MainActor
   public init<P>(
     _ titleKey: LocalizedStringKey, state: P?, fileID: StaticString = #fileID, line: UInt = #line
   )
@@ -450,9 +425,7 @@ extension NavigationLink where Destination == Never {
   ///     copy of the value. Pass a `nil` value to disable the link.
   ///   - fileID: The fileID.
   ///   - line: The line.
-  #if compiler(>=6)
-    @MainActor
-  #endif
+  @MainActor
   @_disfavoredOverload
   public init<S: StringProtocol, P>(
     _ title: S, state: P?, fileID: StaticString = #fileID, line: UInt = #line

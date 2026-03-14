@@ -76,7 +76,7 @@ struct EffectsBasics {
           await send(.numberFactResponse(Result { try await self.factClient.fetch(count) }))
         }
 
-      case let .numberFactResponse(.success(response)):
+      case .numberFactResponse(.success(let response)):
         state.isNumberFactRequestInFlight = false
         state.numberFact = response
         return .none
@@ -136,8 +136,8 @@ struct EffectsBasicsView: View {
       }
 
       Section {
-        Button("Number facts provided by numbersapi.com") {
-          openURL(URL(string: "http://numbersapi.com")!)
+        Button("Number facts provided by number-trivia.com") {
+          openURL(URL(string: "http://number-trivia.com")!)
         }
         .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity)

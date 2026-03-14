@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.1
 
 import CompilerPluginSupport
 import PackageDescription
@@ -8,10 +8,10 @@ let android = Context.environment["TARGET_OS_ANDROID"] ?? "0" != "0"
 let package = Package(
   name: "swift-composable-architecture",
   platforms: [
-    .iOS(.v13),
-    .macOS(.v10_15),
-    .tvOS(.v13),
-    .watchOS(.v6),
+    .iOS(.v16),
+    .macOS(.v13),
+    .tvOS(.v16),
+    .watchOS(.v9),
   ],
   products: [
     .library(
@@ -19,11 +19,20 @@ let package = Package(
       targets: ["ComposableArchitecture"]
     )
   ],
+  traits: [
+    .trait(
+      name: "ComposableArchitecture2Deprecations",
+      description: """
+        Prepare for the next major release by enabling some of the more viral deprecations.
+        """
+    )
+  ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
     .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
     .package(path: "../combine-schedulers"),
     .package(path: "../swift-case-paths"),
+    .package(path: "../swift-clocks"),
     .package(path: "../swift-concurrency-extras"),
     .package(path: "../swift-custom-dump"),
     .package(path: "../swift-dependencies"),
@@ -48,6 +57,7 @@ let package = Package(
       dependencies: [
         "ComposableArchitectureMacros",
         .product(name: "CasePaths", package: "swift-case-paths"),
+        .product(name: "Clocks", package: "swift-clocks"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
@@ -95,16 +105,21 @@ let package = Package(
         .product(name: "MacroTesting", package: "swift-macro-testing"),
       ]
     ),
-  ]
+  ],
+  swiftLanguageModes: [.v6]
 )
 
-#if compiler(>=6)
-  for target in package.targets where target.type != .system && target.type != .test {
-    target.swiftSettings = target.swiftSettings ?? []
-    target.swiftSettings?.append(contentsOf: [
-      .enableExperimentalFeature("StrictConcurrency"),
-      .enableUpcomingFeature("ExistentialAny"),
-      .enableUpcomingFeature("InferSendableFromCaptures"),
-    ])
-  }
-#endif
+for target in package.targets {
+  target.swiftSettings = target.swiftSettings ?? []
+  target.swiftSettings?.append(contentsOf: [
+    .enableUpcomingFeature("ExistentialAny")
+  ])
+}
+
+for target in package.targets where target.type == .system || target.type == .test {
+  target.swiftSettings?.append(contentsOf: [
+    .swiftLanguageMode(.v5),
+    .enableExperimentalFeature("StrictConcurrency"),
+    .enableUpcomingFeature("InferSendableFromCaptures"),
+  ])
+}

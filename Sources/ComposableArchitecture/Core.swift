@@ -17,12 +17,17 @@ enum BindingLocal {
 }
 #endif
 
+enum Origin {
+  case effect
+  case store
+}
+
 @MainActor
 protocol Core<State, Action>: AnyObject, Sendable {
   associatedtype State
   associatedtype Action
   var state: State { get }
-  func send(_ action: Action) -> Task<Void, Never>?
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>?
 
   var canStoreCacheChildren: Bool { get }
   var didSet: CurrentValueRelay<Void> { get }
@@ -36,7 +41,7 @@ final class InvalidCore<State, Action>: Core {
     get { fatalError() }
     set { fatalError() }
   }
-  func send(_ action: Action) -> Task<Void, Never>? { nil }
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? { nil }
 
   @inlinable
   @inline(__always)
@@ -76,18 +81,30 @@ final class RootCore<Root: Reducer>: Core {
     self.state = initialState
     self.reducer = reducer
   }
-  func send(_ action: Root.Action) -> Task<Void, Never>? {
+  func send(_ action: Root.Action, origin: Origin) -> Task<Void, Never>? {
     #if DEBUG
       _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-        _send(action)
+        _send(action, origin: origin)
       }
     #else
-      _send(action)
+      _send(action, origin: origin)
     #endif
   }
-  private func _send(_ action: Root.Action) -> Task<Void, Never>? {
+  private func _send(_ action: Root.Action, origin: Origin) -> Task<Void, Never>? {
     self.bufferedActions.append(action)
-    guard !self.isSending else { return nil }
+    guard !self.isSending else {
+      if origin == .store {
+        reportIssue(
+          """
+          Sent '\(debugCaseOutput(action))' while an action was being processed.
+
+          Reentrant actions are undefined and will be a precondition failure in a future version \
+          of the library.
+          """
+        )
+      }
+      return nil
+    }
 
     self.isSending = true
     var currentState = self.state
@@ -100,7 +117,8 @@ final class RootCore<Root: Reducer>: Core {
       self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
-          self.bufferedActions.removeLast()
+          self.bufferedActions.removeLast(),
+          origin: .effect
         ) {
           tasks.withValue { $0.append(task) }
         }
@@ -111,13 +129,13 @@ final class RootCore<Root: Reducer>: Core {
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
-      let effect = reducer.reduce(into: &currentState, action: action)
+      let effect = reducer._reduce(into: &currentState, action: action)
       let uuid = UUID()
 
       switch effect.operation {
       case .none:
         break
-      case let .publisher(publisher):
+      case .publisher(let publisher):
         var didComplete = false
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
         // UIScheduler routes effects to the main thread on all platforms.
@@ -136,7 +154,7 @@ final class RootCore<Root: Reducer>: Core {
               receiveValue: { [weak self] effectAction in
                 guard let self else { return }
                 if let task = continuation.yield({
-                  self.send(effectAction)
+                  self.send(effectAction, origin: .effect)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
@@ -155,13 +173,13 @@ final class RootCore<Root: Reducer>: Core {
             task.cancel()
           }
         }
-      case let .run(name, priority, operation):
+      case .run(let name, let priority, let operation):
         withEscapedDependencies { continuation in
           let task = Task(name: name, priority: priority) { @MainActor [weak self] in
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
             await operation(
-              Send { effectAction in
+              _Send { effectAction in
                 if isCompleted.value {
                   reportIssue(
                     """
@@ -183,7 +201,7 @@ final class RootCore<Root: Reducer>: Core {
                   )
                 }
                 if let task = continuation.yield({
-                  self?.send(effectAction)
+                  self?.send(effectAction, origin: .effect)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
@@ -216,7 +234,6 @@ final class RootCore<Root: Reducer>: Core {
       }
     }
   }
-  private actor DefaultIsolation {}
 }
 
 final class ScopedCore<Base: Core, State, Action>: Core {
@@ -250,8 +267,8 @@ final class ScopedCore<Base: Core, State, Action>: Core {
   }
   @inlinable
   @inline(__always)
-  func send(_ action: Action) -> Task<Void, Never>? {
-    base.send(actionKeyPath(action))
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? {
+    base.send(actionKeyPath(action), origin: origin)
   }
   @inlinable
   @inline(__always)
@@ -281,6 +298,9 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   let stateKeyPath: KeyPath<Base.State, State?>
   let actionKeyPath: CaseKeyPath<Base.Action, Action>
   var parentCancellable: AnyCancellable?
+  #if DEBUG
+    let initializedInPerceptionTracking = _isInPerceptionTracking
+  #endif
   init(
     base: Base,
     cachedState: State,
@@ -295,17 +315,27 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   @inlinable
   @inline(__always)
   var state: State {
-    let state = base.state[keyPath: stateKeyPath] ?? cachedState
-    cachedState = state
-    return state
+    #if DEBUG
+      return _PerceptionLocals.$skipPerceptionChecking.withValue(
+        initializedInPerceptionTracking || _isInPerceptionTracking
+      ) {
+        let state = base.state[keyPath: stateKeyPath] ?? cachedState
+        cachedState = state
+        return state
+      }
+    #else
+      let state = base.state[keyPath: stateKeyPath] ?? cachedState
+      cachedState = state
+      return state
+    #endif
   }
   @inlinable
   @inline(__always)
-  func send(_ action: Action) -> Task<Void, Never>? {
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? {
     if BindingLocal.isActive && isInvalid {
       return nil
     }
-    return base.send(actionKeyPath(action))
+    return base.send(actionKeyPath(action), origin: origin)
   }
   @inlinable
   @inline(__always)
@@ -320,7 +350,15 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   @inlinable
   @inline(__always)
   var isInvalid: Bool {
-    base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+    #if DEBUG
+      return _PerceptionLocals.$skipPerceptionChecking.withValue(
+        initializedInPerceptionTracking || _isInPerceptionTracking
+      ) {
+        base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+      }
+    #else
+      base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+    #endif
   }
   @inlinable
   @inline(__always)
@@ -349,8 +387,8 @@ final class ClosureScopedCore<Base: Core, State, Action>: Core {
   }
   @inlinable
   @inline(__always)
-  func send(_ action: Action) -> Task<Void, Never>? {
-    base.send(fromAction(action))
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? {
+    base.send(fromAction(action), origin: origin)
   }
   @inlinable
   @inline(__always)

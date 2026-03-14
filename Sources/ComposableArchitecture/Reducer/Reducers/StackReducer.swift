@@ -89,37 +89,13 @@ public struct StackState<Element> {
   /// > Important: Accessing the wrong case will result in a runtime warning and test failure.
   public subscript<Case>(id id: StackElementID, case path: CaseKeyPath<Element, Case>) -> Case?
   where Element: CasePathable {
-    _read { yield self[id: id, case: AnyCasePath(path)] }
-    _modify { yield &self[id: id, case: AnyCasePath(path)] }
+    _read { yield self[id: id, _case: AnyCasePath(path)] }
+    _modify { yield &self[id: id, _case: AnyCasePath(path)] }
   }
 
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  public subscript<Case>(
+  subscript<Case>(
     id id: StackElementID,
-    case path: AnyCasePath<Element, Case>,
+    _case path: AnyCasePath<Element, Case>,
     fileID fileID: _HashableStaticString = #fileID,
     filePath filePath: _HashableStaticString = #filePath,
     line line: UInt = #line,
@@ -268,7 +244,7 @@ public enum StackAction<State, Action>: CasePathable {
       AnyCasePath(
         embed: { .element(id: $0, action: $1) },
         extract: {
-          guard case let .element(id, action) = $0 else { return nil }
+          guard case .element(let id, let action) = $0 else { return nil }
           return (id: id, action: action)
         }
       )
@@ -278,7 +254,7 @@ public enum StackAction<State, Action>: CasePathable {
       AnyCasePath(
         embed: { .popFrom(id: $0) },
         extract: {
-          guard case let .popFrom(id) = $0 else { return nil }
+          guard case .popFrom(let id) = $0 else { return nil }
           return id
         }
       )
@@ -288,7 +264,7 @@ public enum StackAction<State, Action>: CasePathable {
       AnyCasePath(
         embed: { .push(id: $0, state: $1) },
         extract: {
-          guard case let .push(id, state) = $0 else { return nil }
+          guard case .push(let id, let state) = $0 else { return nil }
           return (id: id, state: state)
         }
       )
@@ -398,55 +374,6 @@ extension Reducer {
       column: column
     )
   }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func forEach<
-    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
-  >(
-    _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
-    action toStackAction: AnyCasePath<Action, StackAction<DestinationState, DestinationAction>>,
-    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> some Reducer<State, Action> {
-    _StackReducer(
-      base: self,
-      toStackState: toStackState,
-      toStackAction: toStackAction,
-      destination: destination(),
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
 }
 
 /// A convenience type alias for referring to a stack action of a given reducer's domain.
@@ -497,13 +424,13 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     self.column = column
   }
 
-  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> _Effect<Base.Action> {
     let idsBefore = state[keyPath: self.toStackState]._mounted
-    let destinationEffects: Effect<Base.Action>
-    let baseEffects: Effect<Base.Action>
+    let destinationEffects: _Effect<Base.Action>
+    let baseEffects: _Effect<Base.Action>
 
     switch self.toStackAction.extract(from: action) {
-    case let .element(elementID, destinationAction):
+    case .element(let elementID, let destinationAction):
       if state[keyPath: self.toStackState][id: elementID] != nil {
         let elementNavigationIDPath = self.navigationIDPath(for: elementID)
         destinationEffects = self.destination
@@ -517,7 +444,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
             }
           )
           .dependency(\.navigationIDPath, elementNavigationIDPath)
-          .reduce(
+          ._reduce(
             into: &state[keyPath: self.toStackState][id: elementID]!,
             action: destinationAction
           )
@@ -554,12 +481,12 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         destinationEffects = .none
       }
 
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
 
-    case let .popFrom(id):
+    case .popFrom(let id):
       destinationEffects = .none
       let canPop = state[keyPath: self.toStackState].ids.contains(id)
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
       if canPop {
         state[keyPath: self.toStackState].pop(from: id)
       } else {
@@ -580,7 +507,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         )
       }
 
-    case let .push(id, element):
+    case .push(let id, let element):
       destinationEffects = .none
       if state[keyPath: self.toStackState].ids.contains(id) {
         reportIssue(
@@ -598,7 +525,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           line: line,
           column: column
         )
-        baseEffects = self.base.reduce(into: &state, action: action)
+        baseEffects = self.base._reduce(into: &state, action: action)
         break
       } else if DependencyValues._current.context == .test {
         let nextID = DependencyValues._current.stackElementID.peek()
@@ -623,16 +550,16 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         }
       }
       state[keyPath: self.toStackState]._dictionary[id] = element
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
 
     case .none:
       destinationEffects = .none
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
     }
 
     let idsAfter = state[keyPath: self.toStackState].ids
 
-    let cancelEffects: Effect<Base.Action> =
+    let cancelEffects: _Effect<Base.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
@@ -640,7 +567,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           ._cancel(navigationID: self.navigationIDPath(for: $0))
         }
       )
-    let presentEffects: Effect<Base.Action> =
+    let presentEffects: _Effect<Base.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(

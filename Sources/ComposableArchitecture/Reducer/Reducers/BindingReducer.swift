@@ -10,7 +10,7 @@ import SwiftUI
 /// @Reducer
 /// struct Feature {
 ///   struct State {
-///     @BindingState var isOn = false
+///     var isOn = false
 ///     // More properties...
 ///   }
 ///   enum Action: BindableAction {
@@ -59,18 +59,13 @@ where State == ViewAction.State {
     self.init(internal: { $0[case: toViewAction] })
   }
 
-  @inlinable
-  public init(action toViewAction: @escaping (_ action: Action) -> ViewAction?) {
-    self.init(internal: toViewAction)
-  }
-
   @usableFromInline
   init(internal toViewAction: @escaping (_ action: Action) -> ViewAction?) {
     self.toViewAction = toViewAction
   }
 
   @inlinable
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  public func _reduce(into state: inout State, action: Action) -> _Effect<Action> {
     // NB: Using a closure and not a `\.binding` key path literal to avoid a bug with archives:
     //     https://github.com/pointfreeco/swift-composable-architecture/pull/2641
     guard let bindingAction = self.toViewAction(action).flatMap({ $0.binding })
