@@ -1,8 +1,6 @@
 @_spi(Reflection) import CasePaths
 
-#if canImport(Combine)
-  @preconcurrency import Combine
-#endif
+@preconcurrency import OpenCombineShim
 #if canImport(SwiftUI)
   import SwiftUI
 #endif
@@ -236,6 +234,7 @@ public struct BindingViewStore<State> {
 #endif
 
 extension _Effect {
+  #if !os(Android)
   @available(
     *,
     deprecated,
@@ -250,6 +249,7 @@ extension _Effect {
   public static func send(_ action: Action, animation: Animation? = nil) -> Self {
     .send(action).animation(animation)
   }
+  #endif
 }
 
 extension Store {
@@ -270,6 +270,7 @@ extension Store {
   }
 }
 
+#if !os(Android)
 extension _Effect {
   @available(
     *,
@@ -363,6 +364,7 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
     }
   }
 }
+#endif
 
 extension _Effect {
   @available(
@@ -827,10 +829,15 @@ private struct HashableWrapper<Value>: Hashable {
   func hash(into hasher: inout Hasher) {}
 }
 
+// NB: BindingLocal is defined in Core.swift on Android (#if !canImport(SwiftUI)).
+// On Apple platforms, this copy is used:
+#if canImport(SwiftUI)
 enum BindingLocal {
   @TaskLocal static var isActive = false
 }
+#endif
 
+#if !os(Android)
 @available(
   *,
   deprecated,
@@ -3430,6 +3437,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
     self._bindings(action: AnyCasePath())
   }
 }
+#endif
 
 @available(
   *,
@@ -3801,9 +3809,10 @@ extension TestStoreTask {
 
 extension Duration {
   fileprivate init(nanoseconds: UInt64) {
+    let nsPerSec: UInt64 = 1_000_000_000
     self =
-      .seconds(Int64(nanoseconds / NSEC_PER_SEC))
-      + .nanoseconds(Int64(nanoseconds % NSEC_PER_SEC))
+      .seconds(Int64(nanoseconds / nsPerSec))
+      + .nanoseconds(Int64(nanoseconds % nsPerSec))
   }
 }
 
